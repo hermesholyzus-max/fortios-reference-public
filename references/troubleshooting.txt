@@ -1,0 +1,2954 @@
+
+
+===== FortiOS 7.4.13 PDF page 4108 =====
+
+Troubleshooting
+This section is intended for administrators with super_admin permissions who require assistance with basic and
+advanced troubleshooting. Administrators with other types of permissions may not be able to perform all of the
+tasks in this section.
+This section contains the following troubleshooting topics:
+l Troubleshooting methodologies on page 4109
+l Connectivity Fault Management on page 4112
+l Troubleshooting scenarios on page 4115
+l Checking the system date and time on page 4117
+l Checking the hardware connections on page 4117
+l Checking FortiOS network settings on page 4118
+l Troubleshooting CPU and network resources on page 4121
+l FortiGuard server settings on page 4170
+l Troubleshooting high CPU usage on page 4123
+l Checking the modem status on page 4127
+l Running ping and traceroute on page 4128
+l Checking the logs on page 4133
+l Verifying routing table contents in NAT mode on page 4134
+l Verifying the correct route is being used on page 4134
+l Verifying the correct firewall policy is being used on page 4135
+l Checking the bridging information in transparent mode on page 4135
+l Checking wireless information on page 4137
+l Performing a sniffer trace or packet capture on page 4138
+l Debugging the packet flow on page 4140
+l Testing a proxy operation on page 4143
+l Displaying detail Hardware NIC information on page 4144
+l Performing a traffic trace on page 4147
+l Using a session table on page 4147
+l Finding object dependencies on page 4155
+l Diagnosing NPU-based interfaces on page 4156
+l Identifying the XAUI link used for a specific traffic stream on page 4158
+l Running the TAC report on page 4159
+l Using the process monitor on page 4159
+l Computing file hashes on page 4161
+l Other commands on page 4164
+l FortiGuard troubleshooting on page 4168
+l View open and in use ports on page 4173
+l CLI troubleshooting cheat sheet on page 4174
+l CLI error codes on page 4174
+FortiOS 7.4.13 Administration Guide 4108
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4109 =====
+
+Troubleshooting
+l Additional resources on page 4175
+Troubleshooting methodologies
+The sections in this topic provide an overview of how to prepare to troubleshoot problems in FortiGate. They
+include verifiying your user permissions, establishing a baseline, defining the problem, and creating a plan.
+Verify user permissions
+Before you begin troubleshooting, verify the following:
+l You have administrator privileges for the FortiGate.
+l The FortiGate is integrated into your network.
+l The operation mode is configured.
+l The system time, DNS settings, administrator password, and network interfaces are configured.
+l Firmware, FortiGuard AntiVirus, FortiGuard Application Control, and FortiGuard IPS are up to date.
+If you are using a FortiGate that has virtual domains (VDOMs) enabled, you can often
+troubleshoot within your own VDOM. However, you should inform the super_admin for
+the FortiGate that you will be performing troubleshooting tasks.
+You may also need access to other networking equipment, such as switches, routers,
+and servers to carry out tests. If you do not have access to this equipment, contact your
+network administrator for assistance.
+Establish a baseline
+FortiGate operates at all layers of the OSI model. For this reason, troubleshooting can be complex. Establishing
+baseline parameters for your system before a problem occurs helps to reduce the complexity when you need to
+troubleshoot.
+A best practice is to establish and record the normal operating status. Regular operation data shows trends, and
+allows you to see where changes occur when problems arise. You can gather this data by using logs and SNMP
+tools to monitor the system performance or by regularly running information gathering commands and saving
+the output.
+You should back up your FortiOS configuration on a regular basis even when you are
+not troubleshooting. You can restore the backed up configuration as needed to save
+time recreating it from the factory default settings.
+Use the following CLI commands to obtain normal operating data for a FortiGate:
+FortiOS 7.4.13 Administration Guide 4109
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4110 =====
+
+Troubleshooting
+get system status Displays firmware versions and FortiGuard engine versions, and
+other system information.
+get system performance status Displays CPU and memory states, average network usage,
+average sessions and session setup rate, viruses caught, IPS
+attacks blocked, and uptime.
+get hardware memory Displays information about memory.
+get system session status Displays total number of sessions.
+get router info routing-table all Displays all the routes in the routing table, including their type,
+source, and other useful data.
+get ips session Displays memory used and maximum amount available to IPS as
+well as counts
+get webfilter ftgd-statistics Displays a list of FortiGuard related counts of status, errors, and
+other data.
+diagnose sys session list Displays the list of current detailed sessions.
+show sys dns Displays the configured DNS servers.
+diagnose sys ntp status Displays information about NTP servers.
+You can run any commands that apply to your system for information gathering. For example, if you have active
+VPN connections, use the get vpn series of commands to get more information about them.
+Use execute tac report to get an extensive snapshot of your system. This command runs many diagnostic
+commands for specific configurations. It also records the current state of each feature regardless of the
+features deployed on your FortiGate. If you need to troubleshoot later, you can run the same command again
+and compare the differences to identify any suspicious output.
+Define the problem
+The following questions are intended to compare the current behavior of the FortiGate with normal operations
+to help you define the problem. Be specific with your answers. After you define the problem, search for a
+solution in the troubleshooting scenarios section, and then create a plan to resolve it.
+What is the problem? The problem being observed may not be the actual problem. You should
+determine where the problem lies before starting to troubleshoot the
+FortiGate.
+Was the device working
+before?
+If the device never worked, it might be defective. For more information, see
+Troubleshooting your installation on page 50.
+Can the problem be
+reproduced?
+If the problem is intermittent, it may be dependent on system load.
+Intermittent problems are challenging to troubleshoot because they are
+difficult to reproduce.
+What has changed? Use the FortiGate event log to identify possible configuration changes.
+FortiOS 7.4.13 Administration Guide 4110
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4111 =====
+
+Troubleshooting
+There may be changes in the operating environment. For example, there
+might be a gradual increase in load as more sites are forwarded through the
+firewall.
+If something has changed, roll back the change and assess the impact.
+What is the scope of the
+problem?
+After you isolate the problem, determine what applications, users, devices,
+and operating systems the problem affects.
+The following questions are intended to narrow the scope of the problem
+and identify what to check during troubleshooting. The more factors you
+can eliminate, the less you need to check. For this reason, be as specific
+and accurate as possible when gathering information.
+l What is not working?
+l Is more than one thing not working?
+l Is it partly working? If so, what parts are working?
+l Is it a connectivity issue for the entire device, or is there an application
+that isn’t reaching the Internet?
+l Where did the problem occur?
+l When did the problem occur and to which users or groups of users?
+l What components are involved?
+l What applications are affected?
+l Can you use a packet sniffer to trace the problem?
+l Can you use system debugging or look in the session table to trace the
+problem?
+l Do any of the log files indicate a failure has occurred?
+Create a troubleshooting plan
+After you define the problem and its scope, develop a troubleshooting plan.
+Create checklist Make a list all the possible causes of the problem and how you can test for
+each cause.
+Create a checklist to keep track of what has been tried and what is left to
+test. Checklists are useful when more than one person is performing
+troubleshooting tasks.
+Obtain the required
+equipment
+Testing your solution may require additional networking equipment,
+computers, or other devices.
+Network administrators usually have additional networking equipment
+available to loan you, or a lab where you can bring the FortiGate unit to test.
+If you do not have access to equipment, check for shareware applications
+that can perform the same tasks. Often, there are software solutions you
+can use when hardware is too expensive.
+Consult Fortinet
+troubleshooting resources
+After the checklist is created, refer to the troubleshooting scenarios
+sections to assist with implementing your plan. See Troubleshooting
+scenarios on page 4115.
+FortiOS 7.4.13 Administration Guide 4111
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4112 =====
+
+Troubleshooting
+Gather information for
+technical support
+If you still require technical assistance after the plan is implemented, be
+prepared to provide Fortinet technical support with following information:
+l Firmware build version (use the get system status command)
+l Network topology diagram
+l Recent configuration file
+l Recent debug log (optional)
+l Summary of troubleshooting steps you have taken and the results.
+Do not provide the output from the execute tac report
+unless the support team requests it. The output from this
+command is very large and is not required in many cases.
+Contact technical support Before contacting technical support, ensure you have login access
+(preferably with full read/write privileges) to all networking devices that
+could be relevant to troubleshooting.
+If you are using VMs, be prepared to have someone who can log in to the
+virtual hosting platform in case it is necessary to check and possibly modify
+resource allocation.
+For information about contacting technical support, go to FortiCare Support
+Service page.
+Connectivity Fault Management
+Some FortiGate hardware models support Connectivity Fault Management (CFM) technology. With CFM,
+administrators can easily diagnose and resolve issues in Ethernet networks. CFM provides tools for monitoring,
+testing, and verifying the connectivity and performance of network segments.
+The following platforms support CFM: 
+FortiGate FG-40F, FG-40F-3G4G, FG-FortiGate model, FG-FortiGate model, FG-61E, FG-61F, FG-80E, FG-80E-POE, FG-
+81E, FG-81E-POE, FG-81F, FG-90E-POE, FG-100F, FG-101F, FG-200E, FG-1100E
+FortiWiFi FWF-40F, FWF-FortiGate model, FWF-FortiGate model, FWF-61E, FWF-61F
+Use the config ethernet-oam cfm command to configure the CFM protocol.
+config ethernet-oam cfm
+edit <domain-id>
+set domain-name <string>
+set domain-level <integer>
+config service
+edit <service-id>
+set service-name <string>
+set interface "<string>"
+set mepid <integer>
+set message-interval <integer>
+set cos <integer>
+FortiOS 7.4.13 Administration Guide 4112
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4113 =====
+
+Troubleshooting
+set sender-id Hostname {none | Hostname}
+next
+end
+next
+end
+<domain-id> Specify the domain ID for the Ethernet layer operation, administration, and
+management (OAM) protocol. A unique domain ID is used to communicate
+with other peers under the same domain ID and domain level.
+domain-level <integer> Specify the OAM maintenance level (0 to 7, with 0 being the smallest and 7
+being the largest). A unique domain level is used to communicate with other
+devices under the same domain ID and domain level.
+domain-name <string> Specify the OAM domain name or maintenance domain identifier (MDID).
+Other peer devices recognize the domain name. All devices in the same
+domain with the same service level can communicate with each other.
+A domain can provide multiple services. Each service uses a special service ID. The following items describe a
+service:
+<service-id>  Specify the ID for the service.
+service-name <string>  Specify the name of the service.
+interface <string>  Specify the name of the VLAN interface where the service is enabled. The
+service is associated with a particular VLAN network port and can't be
+accessed by other network ports.
+mepid <integer> Specify the unique ID of the maintenance association endpoints (MEP) (1 -
+8191). The service is associated with a unique MEP ID and can't respond to
+other service requests of a different MEP ID.
+message interval <integer> Specify the continuity-check message frequency interval in milliseconds.
+Determines how long to send a continuity-check message to determine
+whether the service is alive.
+cos <integer> Specify the class of service (COS) bit for continuity-check messages (0 to
+7). CoS is an optional, special bit in the packet of continuity-check
+messages.
+sender-id {none | hostname} Specify the type, length, value (TLV) sender ID:
+l none: indicates no sender ID.
+l hostname: uses the Fortinet production name of the device as the
+sender ID, for example, FortiGate-80F.
+The sender ID is an optional column that includes a hostname in the packet
+of continuity-check messages.
+The following diagnose commands can be used with this feature:
+FortiOS 7.4.13 Administration Guide 4113
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4114 =====
+
+Troubleshooting
+diagnose ethernet-oam
+cfmpeer
+Locate peers configured with config ethernet-oam cfm that are using the
+CFM Continuity Check Protocol (CCP) protocol to connect to the CCP
+daemon (CCD).
+diagnose debug application
+cfmd {enable |
+disable}
+Enable or disable debugging messages of the CFM protocol.
+l enable: enable debugging messages for the CFM protocol. Messages
+appear on the console.
+l disable: disable debugging messages.
+The following execute commands can be used with this feature:
+execute ethernet ping Check if an interface has a peer with mac address and level available under
+CFM support.
+execute ethernet traceroute Check the Ethernet traceroute with the peer FortiGate. The traceroute is
+instructed to achieve a peer through an interface with mac_address and
+level available under CFM support.
+Example
+In this example, an interface (vlan101) connects FortiGate 81F to FortiGate 101F. CFM is configured for the
+interface (vlan101) on the FortiGate 81F. All steps are performed on the FortiGate 101F.
+Because this feature is based on IEEE 802.1Q, an IP address is not needed to connect the interface.
+To configure and use CFM :
+1. Configure CFM for the interface named vlan101:
+config ethernet-oam cfm
+edit 1
+set domain-name cfm-test
+set domain-level 1
+config service
+edit 1
+set service-name vlan-101
+set interface "vlan101"
+set mepid 101
+set message-interval 10000
+set cos 7
+set sender-id Hostname
+next
+end
+next
+end
+2. On the FortiGate 101F, show the peers connecting to the device: 
+# diagnose ethernet-oam cfmpeer
+wait for the responses from CCD daemons ...
+FortiOS 7.4.13 Administration Guide 4114
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4115 =====
+
+Troubleshooting
+======== MEPs (pid 11251) ========
+======== domain_name: cfm-test service_name: vlan-101 mepid: 101 ========
+1 MAC = e0:23:ff:9b:07:0a, state = UP, mdlevel = 1, domain_name = cfm-test, service_name =
+vlan-101, mepid = 81, TLV_port_status = PsUP, TLV_interface_status = isUp
+======== END ========
+3. On FortiGate 101F, check whether the interface has a peer under CFM support:
+# execute ethernet ping vlan101 1 5 e0:23:ff:9b:07:0a
+Sending CFM LBM to e0:23:ff:9b:07:0a
+64 bytes from e0:23:ff:9b:07:0a, sequence 422603820, 1 ms
+64 bytes from e0:23:ff:9b:07:0a, sequence 422603821, 1 ms
+64 bytes from e0:23:ff:9b:07:0a, sequence 422603822, 1 ms
+64 bytes from e0:23:ff:9b:07:0a, sequence 422603823, 1 ms
+64 bytes from e0:23:ff:9b:07:0a, sequence 422603824, 1 ms
+4. Execute the Ethernet traceroute:
+# execute ethernet traceroute vlan101 1 e0:23:ff:9b:07:0a
+Sending CFM LTM probe to e0:23:ff:9b:07:0a
+ethtrace_main: flags = 0, usefdbonly = 0
+ttl 1: LTM with id 984984516
+cfm_matchltr - 384
+cfm_matchltr - 404
+reply from e0:23:ff:9b:07:0a, id=984984516, ttl=0, RlyHit
+Troubleshooting scenarios
+The following table is intended to help you diagnose common problems and provides links to the corresponding
+troubleshooting topics:
+Problem Probable cause Recommended action
+Hardware
+connections
+l Are all of the cables and interfaces
+connected properly?
+l Is the LED for the interface green?
+Checking the hardware connections on
+page 4117
+FortiOS network
+settings
+l If you are having problems
+connecting to the management
+interface, is your protocol enabled on
+the interface for administrative
+access?
+l Does the interface have an IP
+address?
+Checking FortiOS network settings on
+page 4118
+CPU and memory
+resources
+l Is the CPU running at almost 100
+percent usage?
+Troubleshooting CPU and network
+resources on page 4121
+FortiOS 7.4.13 Administration Guide 4115
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4116 =====
+
+Troubleshooting
+Problem Probable cause Recommended action
+l Is your FortiGate running low on
+memory?
+Modem status l Is the modem connected?
+l Are there PPP issues?
+Checking the modem status on page 4127
+Ping and
+traceroute
+Is the FortiGate experiencing complete
+packet loss?
+Running ping and traceroute on page 4128
+Logs Do you need to identify a problem? Checking the logs on page 4133
+Contents of the
+routing table (in
+NAT mode)
+l Are there routes in the routing table
+for default and static routes?
+l Do all connected subnets have a
+route in the routing table?
+l Does a route have a higher priority
+than it should?
+Verifying routing table contents in NAT
+mode on page 4134
+Traffic routes Is the traffic routed correctly? Verifying the correct route is being used
+on page 4134
+Firewall policies Is the correct firewall policy applied to the
+expected traffic?
+Verifying the correct firewall policy is
+being used on page 4135
+Bridging
+information in
+transparent mode
+Are you having problems in transparent
+mode?
+Checking the bridging information in
+transparent mode on page 4135
+Firewall session
+list
+Are there active firewall sessions? Using a session table on page 4147
+Wireless Network Is the wireless network working properly? Checking wireless information on page
+4137
+FortiGuard
+connectivity
+Is the FortiGate communicating properly
+with FortiGuard?
+Verifying connectivity to FortiGuard on
+page 4168
+Sniffer trace l Is traffic entering the FortiGate? Does
+the traffic arrive on the expected
+interface?
+l Is the ARP resolution correct for the
+next-hop destination?
+l Is the traffic exiting the FortiGate to
+the destination as expected?
+l Is the FortiGate sending traffic back
+to the originator?
+Performing a sniffer trace or packet
+capture on page 4138
+Packet flow Is traffic entering or leaving the FortiGate
+as expected?
+Debugging the packet flow on page 4140
+FortiGate is frozen
+or halted
+The FortiGate may have experienced a
+kernel issue.
+On supported models, use the NMI button
+to troubleshoot kernel issues.
+FortiOS 7.4.13 Administration Guide 4116
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4117 =====
+
+Troubleshooting
+Checking the system date and time
+The system date and time are important for FortiGuard services, logging events, and sending alerts. The wrong
+time makes the log entries confusing and difficult to use.
+When possible, use Network Time Protocol (NTP) to set the date and time. This is an automatic method that
+does not require manual intervention. However, you must ensure that the port is allowed through the firewalls
+on your network. FortiToken synchronization requires NTP in many situations.
+For information about setting the system date and time, see Setting the system time on page 3108.
+To view and configure the date and time in the GUI:
+1. Go to Dashboard > Status. The date and time are displayed in the System Information widget, next to
+System Time.
+2. Go to System > Settings.
+3. In the System Time section, select NTP, and then configure the Time Zone, and Set Time settings as
+required.
+To view the date and time in the CLI:
+execute date
+execute time
+To configure the date and time in the CLI:
+Use the set timezone ? command to display a list of timezones and the integers that represent them.
+config system global
+set timezone <integer>
+end
+config system ntp
+set type custom
+config ntpserver
+edit 1
+set server “ntp1.fortinet.net”
+next
+edit 2
+set server “ntp2.fortinet.net”
+next
+end
+set ntpsync enable
+set syncinterval 60
+end
+Checking the hardware connections
+If traffic is not flowing from the FortiGate, there may be a problem with the hardware connection.
+FortiOS 7.4.13 Administration Guide 4117
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4118 =====
+
+Troubleshooting
+To check hardware connections:
+1. Ensure the network cables are plugged into the interfaces.
+2. Verify the LED connection lights for the network cables indicate there is a connection. The lights are
+typically green when there is a connection.
+3. Change the cable when:
+l The cable or its connector are damaged.
+l You are unsure of the type or quality of the cable, such as straight through or crossover.
+l You see exposed wires at the connector.
+4. Connect the FortiGate to different hardware.
+5. Go to Network > Interfaces to ensure the link status for the interface is set to Up.
+The link status is based on the physical connection and cannot be set in FortiOS.
+To enable an interface in the GUI:
+You should still perform basic software connectivity tests to ensure complete connectivity even if there was a
+problem with the hardware connection. The interface might also be disabled, or its Status might be set to Down.
+See Interfaces on page 175.
+1. Go to Network > Interfaces.
+2. Select an interface, such as Port1, and click Edit.
+3. In the Miscellaneous area, next to Status, click Enabled.
+4. Click OK.
+To enable an interface in the CLI:
+config system interface
+edit port1
+set status up
+next
+end
+Checking FortiOS network settings
+Check the FortiOS network settings if you have problems connecting to the management interface. FortiOS
+network settings include, interface settings, DNS Settings, and DHCP settings.
+Interface settings
+If you can access the FortiGate with the management cable only, you can view the interface settings in the GUI.
+To view the interface settings in the GUI:
+1. Go to Network > Interfaces.
+2. Select an interface and click Edit.
+FortiOS 7.4.13 Administration Guide 4118
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4119 =====
+
+Troubleshooting
+3. Check the following interfaces to ensure they are not blocking traffic.
+Setting Description
+Link Status The status is Up when a valid cable is plugged in. The status is Down when an
+invalid cable is plugged in.
+The Link Status is shown physically by the connection LED for the interface. If
+the LED is green, the connection is good. If Link Status is Down, the interface
+does not work.
+Link status also appears in the Network > Interfaces page by default.
+Addressing mode Do not use DHCP if you do not have a DHCP server. You will not be able to log
+into an interface in DHCP mode as it will not have an IP address.
+IP/Network Mask An interface requires an IP address to connect to other devices. Ensure there
+is a valid IP address in this field. The one exception is when DHCP is enabled
+for this interface to get its IP address from an external DHCP server.
+IPv6 address The same protocol must be used by both ends to complete the connection.
+Ensure this interface and the remote connection are both using IPv4 or both
+are using IPv6 addresses.
+Administrative access If no protocols are selected, you will have to use the local management cable
+to connect to the unit. If you are using IPv6, configure the IPv6 administrative
+access protocols.
+Status Ensure the status is set to Up or the interface will not work.
+To display the internal interface settings in the CLI:
+FGT# show system interface <interface_name>
+To view the list of possible interface settings:
+config system interface
+edit <interface_name>
+get
+end
+DNS settings
+To view DNS settings in the GUI:
+Go to Network > DNS.
+You can trace many networking problems back to DNS issues. Check the following items:
+1. Are there values for both the Primary DNS server and Secondary DNS server fields.
+2. Is the Local Domain Name correct?
+3. Are you using IPv6 addressing? If so, are the IPv6 DNS settings correct?
+4. Are you using Dynamic DNS (DDNS)? If so, is it using the correct server, credentials, and interface?
+5. Can you contact both DNS servers to verify the servers are operational?
+FortiOS 7.4.13 Administration Guide 4119
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4120 =====
+
+Troubleshooting
+6. If an interface addressing mode is set to DHCP and is set to override the internal DNS, is that interface
+receiving a valid DNS entry from the DHCP server? Is it a reasonable address and can it be contacted to
+verify it is operational?
+7. Are there any DENY security policies that need to allow DNS?
+8. Can any internal device perform a successful traceroute to a location using the FQDN?
+DHCP server settings
+DHCP servers are common on internal and wireless networks. The DHCP server will cause problems if it is not
+configured correctly.
+To view DHCP server settings in the GUI:
+1. Go to Network > Interfaces.
+2. Select an interface, and click Edit.
+Check the following items:
+1. Is the DHCP server enabled?
+2. Is the DHCP server entry set to Relay? If so, verify there is another DHCP server to which requests can be
+relayed. Otherwise, set it to Server.
+3. Does the DHCP server use a valid IP address range? Are other devices using the addresses? If one or more
+devices are using IP addresses in this range, you can use the IP reservation feature to ensure the DHCP
+server does not use these addresses. See DHCP servers and relays on page 444
+4. Is there a gateway entry? If not, add a gateway entry to ensure that the server's clients have a default route.
+5. Is the system DNS setting being used? A best practice is to avoid confusion by using the system DNS
+whenever possible. However, you can specify up to three custom DNS servers, and you should use all three
+entries for redundancy.
+There are some situations, such as a new wireless interface, or during the initial
+FortiGate configuration, where interfaces override the system DNS entries. When this
+happens, it often shows up as intermittent Internet connectivity.
+To fix the problem, go to Network > DNS, and enable Use FortiGuard Servers.
+Checking CPU and memory resources
+Check the CPU and memory resources when the FortiGate is not working, the network is slow, or there is a
+reduced firewall session setup rate. All processes share the system resources in FortiOS, including CPU and
+memory.
+To view system resources in the GUI:
+Go to Dashboard > Status.
+The resource information is located in the CPU and Memory widgets. For information, see Dashboards and
+Monitors on page 113.
+FortiOS 7.4.13 Administration Guide 4120
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4121 =====
+
+Troubleshooting
+To view system resources in the CLI:
+get system performance status
+Sample output:
+FGT# get system performance status
+CPU states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+CPU0 states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+CPU1 states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+CPU2 states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+CPU3 states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+Memory: 4050332k total, 527148k used (13%), 3381312k free (83%), 141872k freeable (3%)
+Average network usage: 41 / 28 kbps in 1 minute, 54 / 44 kbps in 10 minutes, 42 / 34 kbps in 30
+minutes
+Average sessions: 33 sessions in 1 minute, 48 sessions in 10 minutes, 38 sessions in 30 minutes
+Average session setup rate: 0 sessions per second in last 1 minute, 0 sessions per second in last
+10 minutes, 0 sessions per second in last 30 minutes
+Virus caught: 0 total in 1 minute
+IPS attacks blocked: 0 total in 1 minute
+Uptime: 0 days, 22 hours, 59 minutes
+The first line of the output shows the CPU usage by category:
+CPU states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+The second line of the output shows the memory usage:
+Memory: 4050332k total, 527148k used (13%), 3381312k free (83%), 141872k freeable (3%)
+Memory usage should not exceed 90%. Using too much memory prevents some processes from functioning
+properly. For example, if the system is running low on memory, antivirus scanning enters into failopen mode
+where it drops connections or bypasses the antivirus system.
+Other lines of output, such as average network usage, average session setup rate, viruses caught, and
+IPS attacks blocked, help determine why system resource usage is high.
+For example:
+l A high average network usage may indicate high traffic processing on the FortiGate,
+l A very low or zero, average session setup rate may indicate the proxy is overloaded and unable to do its
+job.
+Troubleshooting CPU and network resources
+FortiGate has stopped working
+If the FortiGate has stopped working, the first line of the output will look similar to this:
+CPU states: 0% user 0% system 0% nice 100% idle
+Network is slow
+If your network is running slow, the first line of the output will look similar to this:
+CPU states: 1% user 98% system 0% nice 1% idle
+FortiOS 7.4.13 Administration Guide 4121
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4122 =====
+
+Troubleshooting
+This example shows that all of the CPU is being used by system processes, and the FortiGate is overloaded.
+When overloading occurs, it is possible a process such as scanunitid is using all the resources to scan traffic. In
+this case you need to reduce the amount of traffic being scanned by blocking unwanted protocols, configuring
+more security policies to limit scanning to certain protocols, or similar actions.
+It is also possible a hacker has accessed your network and is overloading it with malicious activity, such as
+running a spam server or using zombie PCs to attack other networks on the Internet.
+You can use the following command to investigate the problem with the CPU:
+get system performance top
+This command shows all of the top processes that are running on the FortiGate and their CPU usage. The
+process names are on the left. If a process is using most of the CPU cycles, investigate it to determine whether
+the activity is normal.
+Reduced firewall session setup rate
+A reduced firewall session setup rate can be caused by a lack of system resources on the FortiGate, or reaching
+the session count limit for a VDOM.
+As a best practice, administrators should record the session setup rate during normal
+operation to establish a baseline to help define a problem when your are
+troubleshooting.
+The session setup rate appears in the average sessions section of the output.
+A reduced firewall session setup rate will look similar to this:
+Average sessions: 80 sessions in 1 minute, 30 sessions in 10 minutes, 42 sessions in 30 minutes
+Average session setup rate: 3 sessions per second in last 1 minute, 0 sessions per second in last 10
+minutes, 0 sessions per second in last 30 minutes
+In the example above, there were 80 sessions in 1 minute, or an average of 3 sessions per second.
+The values for 10 minutes and 30 minutes allow you to take a longer average for a more reliable value if your
+FortiGate is working at maximum capacity. The smallest FortiGate can have 1,000 sessions established per
+second across the unit.
+The session setup rate is a global command. If you have multiple VDOMs configured
+with many sessions in each VDOM, the session setup rate per VDOM will be slower than
+if there are no VDOMs configured.
+High memory usage
+As with any system, a FortiGate has limited hardware resources, such as memory, and all processes running on
+the FortiGate share the memory. Each process uses more or less memory, depending on its workload. For
+example, a process usually uses more memory in high traffic situations. If some processes use all of the
+available memory, other processes will not be able to run.
+When high memory usage occurs, the services may freeze up, connections may be lost, or new connections
+may be refused.
+FortiOS 7.4.13 Administration Guide 4122
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4123 =====
+
+Troubleshooting
+If you see high memory usage in the Memory widget, the FotiGate may be handling high traffic volumes.
+Alternatively, the FortiGate may have problems with connection pool limits that are affecting a single proxy. If
+the FortiGate receives large volumes of traffic on a specific proxy, the unit may exceed the connection pool
+limit. If the number of free connections within a proxy connection pool reaches zero, issues may occur.
+To view current memory usage information in the CLI:
+diagnose hardware sysinfo memory
+Sample output:
+total: used: free: shared: buffers: cached: shm:
+Mem: 2074185728 756936704 1317249024 0 20701184 194555904 161046528
+Swap:  0  0  0
+MemTotal:   2025572 kB
+MemFree:  1286376 kB
+MemShared:  0 kB
+Buffers:  20216 kB
+Cached: 189996 kB
+SwapCached:  0 kB
+Active:  56644 kB
+Inactive:   153648 kB
+HighTotal:  0 kB
+HighFree:  0 kB
+LowTotal:  2025572 kB
+LowFree: 1286376 kB
+SwapTotal:  0 kB
+SwapFree: 0 kB
+Troubleshooting high CPU usage
+Connection-related problems may occur when FortiGate's CPU resources are over extended. This occurs when
+you deploy too many FortiOS features at the same time.
+Examples of CPU intensive features:
+l VPN high-level encryption
+l Intensive scanning of all traffic
+l Logging all traffic and packets
+l Dashboard widgets that frequently perform data updates
+For information on customizing the CPU use threshold, see Execute a CLI script based on memory and CPU
+thresholds on page 3787.
+Determining the current level of CPU usage
+You can view CPU usage levels in the GUI or CLI. For precise usage values for both overall usage and specific
+processes, use the CLI.
+FortiOS 7.4.13 Administration Guide 4123
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4124 =====
+
+Troubleshooting
+To view CPU usage in the GUI:
+Go to Dashboard > Status. Real-time CPU usage information is located in the CPU widget.
+To view CPU usage in the CLI:
+l Show top processes information:
+diagnose sys top
+l Show top threads information:
+diagnose sys top-all
+Sample output:
+Run Time: 86 days, 0 hours and 10 minutes
+0U, 0N, 0S, 100I, 0WA, 0HI, 0SI, 0ST; 3040T, 2437F
+bcm.user 93 S < 3.1 0.4
+httpsd 18922 S 1.5 0.5
+httpsd 19150 S 0.3 0.5
+newcli 20195 R 0.1 0.1
+cmdbsvr 115 S 0.0 0.8
+pyfcgid 20107 S 0.0 0.6
+forticron 146 S 0.0 0.5
+httpsd 139 S 0.0 0.5
+cw_acd 166 S 0.0 0.5
+miglogd 136 S 0.0 0.5
+pyfcgid 20110 S 0.0 0.4
+pyfcgid 20111 S 0.0 0.4
+pyfcgid 20109 S 0.0 0.4
+httpsd 20192 S 0.0 0.4
+miglogd 174 S 0.0 0.4
+miglogd 175 S 0.0 0.4
+fgfmd 165 S 0.0 0.3
+newcli 20191 S 0.0 0.3
+initXXXXXXXXXXX 1 S 0.0 0.3
+httpsd 184 s 0.0 0.3
+The following table explains the codes in the second line of the output:
+Code Description
+U Percentage of user space applications that are currently using the CPU
+N Percentage of time that the CPU spent on low priority processes since the last shutdown
+S Percentage of system processes (or kernel processes) that are using the CPU
+I Percentage of idle CPU resources
+WA Percentage of time that the CPU spent waiting on IO peripherals since the last shutdown
+HI Percentage of time that the CPU spent handling hardware interrupt routines since the last
+shutdown
+SI Percentage of time that the CPU spent handling software interrupt routines since the last
+shutdown
+FortiOS 7.4.13 Administration Guide 4124
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4125 =====
+
+Troubleshooting
+Code Description
+ST Steal time: Percentage of time a virtual CPU waits for the physical CPU when the hypervisor
+is servicing another virtual processor
+T Total FortiOS system memory in MB
+F Free memory in MB
+Each additional line of the command output displays information specific to processes or threads that are
+running on the FortiGate unit. For example, the sixth line of the output is: newcli 20195 R 0.1 0.1
+The following table describes the data in the sixth line of the output:
+Item Description
+newcli The process (or thread) name.
+Duplicate process or thread names indicate that separate instances of that process or
+thread are running.
+20195 The process or thread ID, which can be any number.
+R Current state of the process or thread. The process or thread state can be:
+l R - running
+l S - sleep
+l Z - zombie
+l D- disk sleep
+0.1 The percentage of CPU capacity that the process or thread is using.
+CPU usage can range from 0.0 for a process or thread that is sleeping to higher values for a
+process or thread that's taking a lot of CPU time.
+0.1 The amount of memory that the process or thread is using.
+Memory usage can range from 0.1 to 5.5 and higher.
+You can use the following single-key commands when running diagnose sys top or diagnose sys top-all:
+l q to quit and return to the normal CLI prompt.
+l p to sort the processes by the amount of CPU that the processes are using.
+l m to sort the processes by the amount of memory that the processes are using.
+The output only displays the top processes or threads that are running. For example, if 20 are listed, they are the
+top 20 currently running, sorted by either CPU or memory usage. You can configure the number of processes or
+threads displayed, using the following CLI commands:
+diagnose sys top <integer_seconds> <integer_maximum_lines>
+diagnose sys top-all <integer_seconds> <integer_maximum_lines>
+Where:
+l <integer_seconds> is the delay in seconds (default is 5)
+l <integer_maximum_lines> is the maximum number of lines (or processes) to list (default is 20)
+FortiOS 7.4.13 Administration Guide 4125
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4126 =====
+
+Troubleshooting
+Determining which features are using the most CPU resources
+You can use the CLI to view the top few processes that are currently running and using the most CPU resources.
+To view processes using the most CPU resources:
+get system performance top
+The entries at the top are using the most CPU resources. The second column from the right shows CPU usage
+by percentage. Note which processes are using the most resources and try to reduce their CPU load.
+Processes you will see include:
+l ipsengine: the IPS engine that scans traffic for intrusions
+l scanunitd: antivirus scanner
+l httpsd: secure HTTP
+l iked: internet key exchange (IKE) in use with IPsec VPN tunnels
+l newcli: active whenever you're accessing the CLI
+l sshd: there are active secure socket connections
+l cmdbsrv: the command database server application
+Go to the features that are at the top of the list and look for evidence of CPU overuse. Generally, the monitor for
+a feature is a good place to start.
+Checking for unnecessary CPU “wasters”
+These are some best practices that will reduce your CPU usage, even if the FortiGate is not experiencing high
+CPU usage. Note that if the following information instructs you to turn off a feature that you require, disregard
+that part of the instructions.
+l Use hardware acceleration wherever possible to offload tasks from the CPU. Offloading tasks, such as
+encryption, frees up the CPU for other tasks.
+l Schedule antivirus, IPS, and firmware updates during off-peak hours. These updates do not usually
+consume CPU resources but they can disrupt normal operation.
+l Check the log levels and which events are being logged. This is the severity of the messages that are
+recorded. Consider going up one level to reduce the amount of logging. Also, if there are events you do not
+need to monitor, remove them from the list.
+l Log to FortiCloud instead of logging to memory or disk. Logging to memory quickly uses up resources and
+logging to local disk impacts overall performance and reduces the lifetime of the unit.
+Fortinet recommends logging to FortiCloud to avoid using too much CPU.
+l If the disk is almost full, transfer the logs or data off the disk to free up space. When a disk is almost full it
+consumes a lot of resources to find free space and organize the files.
+l If packet logging is enabled on the FortiGate, consider disabling it. When packet logging is enabled, it
+records every packet that comes through that policy.
+l Halt all sniffers and traces.
+l Ensure the FortiGate isn't scanning traffic twice. Traffic does not need to be rescanned if it enters the
+FortiGate on one interface, goes out another, and then comes back in again. Doing so is a waste of
+resources. However, ensure that traffic truly is being scanned once.
+FortiOS 7.4.13 Administration Guide 4126
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4127 =====
+
+Troubleshooting
+l Reduce the session timers to close unused sessions faster. Enter the following CLI commands, which
+reduce the default values. Note that, by default, the system adds 10 seconds to tcp-timewait.
+config system global
+set tcp-halfclose-timer 30
+set tcp-halfopen-timer 30
+set tcp-timewait-timer 0
+set udp-idle-timer 60
+end
+l Go to System > Feature Visibility, and enable only features that you need.
+SNMP monitoring
+When CPU usage is under control, use SNMP to monitor CPU usage. Alternatively, use logging to record CPU
+and memory usage every 5 minutes.
+Once the system is back to normal, you should set up a warning system that sends alerts when CPU resources
+are used excessively. A common method to do this is using SNMP. SNMP monitors many values in FortiOS and
+allows you to set high water marks that generate events. You can run an application on your computer to watch
+for and record these events.
+To enable SNMP:
+1. Go to System > SNMP.
+2. Configure an SNMP community.
+See SNMP on page 3367.
+You can use the System Resources widget to record CPU usage if SNMP is too
+complicated. However, the widget only records problems as they happen and will not
+send you alerts for problems.
+Checking the modem status
+You can use the CLI to troubleshoot a modem that is not working properly, or troubleshoot a FortiGate that does
+not detect the modem.
+To diagnose modem issues in the CLI:
+diagnose sys modem {cmd | com | detect | history | external-modem | query| reset}
+You should always run the following command after you connect a USB modem to FortiGate:
+diagnose sys modem detect
+Use the following command to view the modem's configuration, vendor and custom product identification
+number:
+get system modem
+Use the following commands to resolve connectivity issues:
+FortiOS 7.4.13 Administration Guide 4127
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4128 =====
+
+Troubleshooting
+l diagnose debug enable: Activates the debug on the console
+l diagnose debug application modemd: Dumps communication between the modem and the unit.
+l diagnose debug application ppp: Dumps the PPP negotiating messages.
+l execute modem dial: Displays modem debug output.
+The modem diagnose output should not contain errors when initializing. You should also verify the number used
+to dial into your ISP.
+Running ping and traceroute
+Ping and traceroute are useful tools in network troubleshooting. Alone, either tool can determine network
+connectivity between two points. However, ping can be used to generate simple network traffic that you can
+view using diagnose commands in FortiGate. This combination can be very powerful when you are trying to
+locate network problems.
+Ping and traceroute can also tell you if your computer or network device has access to a domain name server
+(DNS). Both tools can use IP addresses or device domain names to determine why particular services, such as
+email or web browsing, may not work properly.
+If ping does not work, it may be disabled on at least one of the interface settings and
+security policies for that interface.
+Both ping and traceroute require particular ports to be open on firewalls to function. Since you typically use
+these tools to troubleshoot, you can allow them in the security policies and on interfaces only when you need
+them. Otherwise, keep the ports disabled for added security.
+Ping
+The ping command sends a very small packet to a destination, and waits for a response. The response has a
+timer that expires when the destination is unreachable.
+Ping is part of layer 3 on the OSI Networking Model. Ping sends Internet Control Message Protocol (ICMP) “echo
+request” packets to the destination, and listens for “echo response” packets in reply. However, many public
+networks block ICMP packets because ping can be used in a denial of service (DoS) attack (such as Ping of
+Death or a smurf attack), or by an attacker to find active locations on the network. By default, FortiGate units
+have ping enabled while broadcast-forward is disabled on the external interface.
+What ping can tell you
+Beyond the basic connectivity information, ping can tell you the amount of packet loss (if any), how long it takes
+the packet to make the round trip, and the variation in that time from packet to packet.
+If packet loss is detected, you should investigate the following:
+l Possible ECMP, split horizon, or network loops.
+l Cabling, to ensure there are no loose connections.
+FortiOS 7.4.13 Administration Guide 4128
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4129 =====
+
+Troubleshooting
+l Verify which security policy was used. To do this:
+Go to Policy & Objects > Firewall Policy and view the packet count column.
+If there is total packet loss, you should investigate the following:
+1. Ensure cabling is correct, and all equipment between the two locations is accounted for.
+2. Ensure all IP addresses and routing information along the route is configured as expected.
+3. Ensure all firewalls, including FortiGate security policies allow PING to pass through.
+FortiGate ping options
+Use the following CLI to view all the FortiGate ping options:
+execute ping-options ?
+adaptive-ping Adaptive ping <enable|disable>.
+data-size Integer value to specify datagram size in bytes.
+df-bit Set DF bit in IP header <yes | no>.
+interface Auto | <outgoing interface>.
+interval Integer value to specify seconds between two pings.
+pattern Hex format of pattern, e.g. 00ffaabb.
+repeat-count Integer value to specify how many times to repeat PING.
+reset Reset settings.
+source Auto | <source interface IP>.
+timeout Integer value to specify timeout in seconds.
+tos IP type-of-service option.
+ttl Integer value to specify time-to-live.
+use-sdwan Use SD-WAN rules to get output interface <yes | no>.
+validate-reply Validate reply data <yes | no>.
+view-settings View the current settings for PING option.
+adaptive-ping {enable |
+disable}
+Enable or disable adaptive ping. FortiGate sends the next packet after the
+last response is received.
+data-size <integer> Specify the size of data in bytes. The size excludes ICMP header
+information. The data size allows you to control the ICMP datagram size to
+test the effects of different packet sizes on the connection.
+Enter an integer value from <0> to <65507>.
+df-bit {yes | no} Don't fragment bit. Prevent or allow the ICMP packet to fragment:  
+l yes: Prevent the ICMP packet from being fragmented.
+l no: Allow the ICMP packet to be fragmented.
+interface {auto | <outgoing
+interface>}
+Specify the outgoing interface:
+l auto: Automatically select the interface based on the destination and
+routing table.
+l <outgoing interface>: Manually specify the interface to be used for
+ping. When source is specified, the IP address will be used as the ping
+source IP.
+interval <integer> Specify the time between pings in seconds.
+Enter an integer value from <1> to <2147483647>.
+FortiOS 7.4.13 Administration Guide 4129
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4130 =====
+
+Troubleshooting
+pattern <string> Specify a pattern in hex format, for example, 00ffaabb, to be used in the
+data section of the ICMP packet.
+repeat-count <integer> Specify how many times to repeat the ping attempt.
+Enter an integer value from <1> to <2147483647>.
+reset Reset ping options to default values.
+source {auto | <source
+interface IP>}
+Specify the source IP address to use for sending out ping:
+l auto: Selects the primary IP address of the source interface.
+l <source interface ip>: Specify a source IP address for the interface
+used.
+timeout <integer> Specify in seconds how long to wait until the ping times out.
+Enter an integer value from <0> to <2147483647>.
+tos Set the type of service (ToS) field in the packet header to indicate the
+desired quality of service:
+l default: Defaults to 0.
+l lowcost: Minimize the cost.
+l lowdelay: Minimize the delay.
+l reliability: Maximize reliability.
+l throughput: Maximize throughput.
+ttl <integer> Specify the time to live. Time to live is the number of hops the ping packet
+should be allowed to make before being discarded or returned.
+Enter an integer value from <1> to <1255>.
+use-sdwan {yes | no} Specify whether to use SD-WAN rules and policy routes.
+l yes: The ping follows SD-WAN rules and policy routes. Usually used
+with other options, such as source, to match a specific SD-WAN rule
+that is based on a specific source address.
+l no: Do not follow SD-WAN rules and policy routes.
+validate-reply {yes | no} Specify whether to validate reply data:
+l yes: Validate reply data.
+l no: Do not validate reply data.
+view-settings Display the current ping option settings.
+How to use ping
+Ping syntax is the same for nearly every type of system on a network.
+To ping from a FortiGate unit:
+1. Go to Dashboad, and connect to the CLI through either telnet or the CLI widget.
+2. Enter execute ping <example-ip> to send 5 ping packets to the destination IP address.
+To modify ping options, first apply your changes using the command execute ping-options <option>
+<setting>.
+# execute ping <example-ip>
+FortiOS 7.4.13 Administration Guide 4130
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4131 =====
+
+Troubleshooting
+PING <example-ip> (<example-ip>): 56 data bytes
+64 bytes from <example-ip>: icmp_seq=0 ttl=255 time=0.3 ms
+64 bytes from <example-ip>: icmp_seq=1 ttl=255 time=0.2 ms
+64 bytes from <example-ip>: icmp_seq=2 ttl=255 time=0.2 ms
+64 bytes from <example-ip>: icmp_seq=3 ttl=255 time=0.2 ms
+64 bytes from <example-ip>: icmp_seq=4 ttl=255 time=0.2 ms
+--- <example-ip> ping statistics ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 0.2/0.2/0.3 ms
+3. Enter the domain name to test name resolution.
+# execute ping google.com
+PING google.com (142.250.179.78): 56 data bytes
+To ping from a Microsoft Windows PC:
+1. Open a command window.
+2. Enter ping <example-ip> to ping the default internal interface of the FortiGate with four packets.
+Other options include:
+l -t to send packets until you press Ctrl+C
+l -a to resolve addresses to domain names where possible
+l -n X to send X ping packets and stop
+C:\>ping <example-ip>
+Pinging <example-ip> with 32 bytes of data:
+Reply from <example-ip>: bytes=32 time=10ms TTL=255
+Reply from <example-ip>: bytes=32 time<1ms TTL=255
+Reply from <example-ip>: bytes=32 time=1ms TTL=255
+Reply from <example-ip>: bytes=32 time=1ms TTL=255
+Ping statistics for <example-ip>:
+Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+Minimum = 0ms, Maximum = 10ms, Average = 3ms
+To ping from a Linux PC:
+1. Go to a shell prompt.
+2. Enter “ping <example-ip>”.
+Traceroute
+Where ping will only tell you if it reached its destination and returned successfully, traceroute shows each step
+of the journey to its destination and how long each step takes. If ping finds an outage between two points, you
+can use traceroute to locate exactly where the problem is.
+Traceroute works by sending ICMP packets to test each hop along the route. It sends three packets, and then
+increases the time to live (TTL) setting by one each time. This effectively allows the packets to go one hop
+farther along the route. This is why most traceroute commands display their maximum hop count before they
+start tracing the route, which is the maximum number of steps it takes before it declares the destination
+FortiOS 7.4.13 Administration Guide 4131
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4132 =====
+
+Troubleshooting
+unreachable. Also, the TTL setting may result in steps along the route timing out due to slow responses. There
+are many possible reasons for this to occur.
+By default, traceroute uses UDP datagrams with destination ports numbered from 33434 to 33534. The
+traceroute utility may also offer the option to select use of ICMP echo request (type 8) instead, which the
+Windows tracert utility uses. If you must, allow both protocols inbound through the FortiGate security policies
+(UDP with ports from 33434 to 33534 and ICMP type 8).
+To track traceroute packets in the GUI:
+Go to Policy & Objects > Firewall Policy and view the packet count column.
+This allows you to verify the connection and confirm which security policy the traceroute packets are using.
+What traceroute can tell you
+Both ping and traceroute verify connectivity between two points. However, only traceroute shows you each
+step in the connection path. Also, ping and traceroute use different protocols and ports, so one may succeed
+where the other fails.
+You can verify your DNS connection using traceroute. If you enter an FQDN instead of an IP address for the
+traceroute, DNS tries to resolve that domain name. If the name isn't resolved, you have DNS issues.
+Using traceroute
+The traceroute command varies slightly between operating systems. In Microsoft Windows, the command name
+is shortened to “tracert”. Also, your output lists different domain names and IP addresses along your route.
+To use traceroute on a Microsoft Windows PC:
+1. Open a command window.
+2. Enter tracert fortinet.com to trace the route from the PC to the Fortinet web site.
+C:\>tracert fortinet.com
+Tracing route to fortinet.com [208.70.202.225]
+over a maximum of 30 hops:
+1 <1 ms <1 ms <1 ms <example-ip>
+2 66 ms 24 ms 31 ms 209-87-254-xxx.storm.ca [209.87.254.221]
+3 52 ms 22 ms 18 ms core-2-g0-0-1104.storm.ca [209.87.239.129]
+4 43 ms 36 ms 27 ms core-3-g0-0-1185.storm.ca [209.87.239.222]
+5 46 ms 21 ms 16 ms te3-x.1156.mpd01.cogentco.com [38.104.158.69]
+6 25 ms 45 ms 53 ms te8-7.mpd01.cogentco.com [154.54.27.249]
+7 89 ms 70 ms 36 ms te3-x.mpd01.cogentco.com [154.54.6.206]
+8 55 ms 77 ms 58 ms sl-st30-chi-.sprintlink.net [144.232.9.69]
+9 53 ms 58 ms 46 ms sl-0-3-3-x.sprintlink.net [144.232.19.181]
+10 82 ms 90 ms 75 ms sl-x-12-0-1.sprintlink.net [144.232.20.61]
+11 122 ms 123 ms 132 ms sl-0-x-0-3.sprintlink.net [144.232.18.150]
+12 129 ms 119 ms 139 ms 144.232.20.7
+13 172 ms 164 ms 243 ms sl-321313-0.sprintlink.net [144.223.243.58]
+14 99 ms 94 ms 93 ms 203.78.181.18
+15 108 ms 102 ms 89 ms 203.78.176.2
+16 98 ms 95 ms 97 ms 208.70.202.225
+FortiOS 7.4.13 Administration Guide 4132
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4133 =====
+
+Troubleshooting
+The first column on the left is the hop count, which cannot exceed 30 hops. When that number is reached,
+the traceroute ends.
+The second, third, and fourth columns display how much time each of the three packets takes to reach this
+stage of the route. These values are in milliseconds and normally vary quite a bit. Typically a value of <1ms
+indicates a local connection.
+The fifth column (farthest to the right) shows the domain name of the device and its IP address, or possibly
+only the IP address.
+To perform a traceroute on a Linux PC:
+1. Go to a command line prompt.
+2. Enter “traceroute fortinet.com”.
+The Linux traceroute output is very similar to the Windows tracert output.
+To trace a route from a FortiGate to a destination IP address in the CLI:
+# execute traceroute www.fortinet.com
+traceroute to www.fortinet.com (66.171.121.34), 32 hops max, 84 byte packets
+1 <example-ip> 0.637 ms 0.653 ms 0.279 ms
+2 209.87.254.221 <static-209-87-254-221.storm.ca> 2.448 ms 2.519 ms 2.458 ms
+3 209.87.239.129 <core-2-g0-2.storm.ca> 2.917 ms 2.828 ms 9.324 ms
+4 209.87.239.199 <core-3-bdi1739.storm.ca> 13.248 ms 12.401 ms 13.009 ms
+5 216.66.41.113 <v502.core1.tor1.he.net> 17.181 ms 12.422 ms 12.268 ms
+6 184.105.80.9 <100ge1-2.core1.nyc4.he.net> 21.355 ms 21.518 ms 21.597 ms
+7 198.32.118.41 <ny-paix-gni.twgate.net> 83.297 ms 84.416 ms 83.782 ms
+8 203.160.228.217 <217-228-160-203.TWGATE-IP.twgate.net> 82.579 ms 82.187 ms 82.066 ms
+9 203.160.228.229 <229-228-160-203.TWGATE-IP.twgate.net> 82.055 ms 82.455 ms 81.808 ms
+10 203.78.181.2 82.262 ms 81.572 ms 82.015 ms
+11 203.78.186.70 83.283 ms 83.243 ms 83.293 ms
+12 66.171.127.177 84.030 ms 84.229 ms 83.550 ms
+13 66.171.121.34 <www.fortinet.com> 84.023 ms 83.903 ms 84.032 ms
+14 66.171.121.34 <www.fortinet.com> 83.874 ms 84.084 ms 83.810 ms
+Checking the logs
+A log message records the traffic passing through FortiGate to your network and the action FortiGate takes
+when it scans the traffic. You should log as much information as possible when you first configure FortiOS. If
+FortiGate logs are too large, you can turn off or scale back the logging for features that are not in use.
+It is difficult to troubleshoot logs without a baseline. Before you can determine if the logs indicate a problem, you
+need to know what logs result from normal operation.
+When troubleshooting with log files
+l Compare current logs to a recorded baseline of normal operation.
+l If you need to, increase the level of logging (such as from Warning to Information) to obtain more
+information.
+When increasing logging levels, ensure that you configure email alerts and select both disk usage and log
+quota. This ensures that you will be notified if the increase in logging causes problems.
+FortiOS 7.4.13 Administration Guide 4133
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4134 =====
+
+Troubleshooting
+To configure the log settings in the GUI:
+Go to Log & Report > Log Settings.
+Determine the activities that generate the most log entries:
+l Check all logs to ensure important information is not overlooked.
+l Filter or order log entries based on different fields, such as level, service, or IP address, to look for patterns
+that may indicate a specific problem, such as frequent blocked connections on a specific port for all IP
+addresses.
+Logs can help identify and locate any problems, but they do not solve them. The purpose of logs is to speed up
+your problem solving and save you time and effort.
+For more information about logging and log reports, see Log and Report on page 3944.
+Verifying routing table contents in NAT mode
+Verify the contents of the routing table when a FortiGate has limited or no connectivity.
+The routing table stores the routes currently in use for both static and dynamic protocols. Storing a route in the
+routing table saves time and resources performing a lookup. To ensure the most recently used routes remain in
+the table, old routes are bumped to make room for new ones. You cannot perform this task when FortiGate is in
+transparent mode.
+If FortiGate is running in NAT mode, verify that all desired routes are in the routing table, including local subnets,
+default routes, specific static routes, and dynamic routing protocols.
+To view the routing table in the CLI:
+get router info routing-table all
+Sample output:
+FGT# get router info routing-table all
+Codes:
+K - kernel, C - connected, S - static, R - RIP, B - BGP
+O - OSPF, IA - OSPF inter area
+N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+E1 - OSPF external type 1, E2 - OSPF external type 2
+i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+* - candidate default
+S* 0.0.0.0/0 [10/0] via <example-ip>, wan1
+C <example-ip>/24 is directly connected, internal
+C <example-ip>/24 is directly connected, wan1
+Verifying the correct route is being used
+Run a trace route from a machine in the local area network (LAN) to ensure traffic is flowing as expected through
+the correct route when there is more than one default route.
+In the following example output:
+FortiOS 7.4.13 Administration Guide 4134
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4135 =====
+
+Troubleshooting
+l The first hop contains the IP address <example-ip>, which is the internal interface of the FortiGate.
+l The second hop contains the IP address <example-ip>, to which the wan1 interface of the FortiGate is
+connected.
+This means the route through the wan1 interface is being used for this traffic.
+C:\>tracert www.fortinet.com
+Tracing route to www.fortinet.com [66.171.121.34]
+over a maximum of 30 hops:
+1 <1 ms <1 ms <1 ms <example-ip>
+2 1 ms <1 ms <1 ms <example-ip>
+3 3 ms 3 ms 3 ms static-209-87-254-221.storm.ca [209.87.254.221]
+4 3 ms 3 ms 3 ms core-2-g0-2.storm.ca [209.87.239.129]
+5 13 ms 13 ms 13 ms core-3-bdi1739.storm.ca [209.87.239.199]
+6 12 ms 19 ms 11 ms v502.core1.tor1.he.net [216.66.41.113]
+7 22 ms 22 ms 21 ms 100ge1-2.core1.nyc4.he.net [184.105.80.9]
+8 84 ms 84 ms 84 ms ny-paix-gni.twgate.net [198.32.118.41]
+9 82 ms 84 ms 82 ms 217-228-160-203.TWGATE-IP.twgate.net [203.160.22
+8.217]
+10 82 ms 81 ms 82 ms 229-228-160-203.TWGATE-IP.twgate.net [203.160.22
+8.229]
+11 82 ms 82 ms 82 ms 203.78.181.2
+12 84 ms 83 ms 83 ms 203.78.186.70
+13 84 ms * 85 ms 66.171.127.177
+14 84 ms 84 ms 84 ms fortinet.com [66.171.121.34]
+15 84 ms 84 ms 83 ms fortinet.com [66.171.121.34]
+You can also see the route taken for each session by debugging the packet flow in the CLI. For more
+information, see Debugging the packet flow on page 4140.
+Verifying the correct firewall policy is being used
+If you have more than one firewall policy, you can check which policy is being used in the Policy & Objects
+module in the GUI.
+To verify the firewall policy in the GUI:
+1. Go to Policy & Objects > Firewall Policy.
+2. Look in the Count column to see which policy is being used. The count must show traffic increasing.
+Debugging the packet flow in the CLI shows the policy ID that's allowing the traffic. For information, see
+Debugging the packet flow on page 4140.
+Checking the bridging information in transparent mode
+Checking the bridging information is useful when you are experiencing connectivity problems. When FortiGate is
+set to transparent mode, it acts like a bridge and sends all incoming traffic out on the other interfaces. Each
+bridge is a link between interfaces.
+FortiOS 7.4.13 Administration Guide 4135
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4136 =====
+
+Troubleshooting
+When traffic is flowing between the interfaces, you can see the bridges listed in the CLI. If no bridges are listed,
+this is the likely cause of the connectivity issue. When investigating bridging information, check for the MAC
+address of the interface or device in question.
+How to check the bridging information
+To view the list of bridge instances in the CLI:
+diagnose netlink brctl list
+Sample output:
+#diagnose netlink brctl list
+list bridge information
+1. root.b fdb: size=256 used=6 num=7 depth=2 simple=no
+Total 1 bridges
+How to display forwarding domain information
+You can use forwarding domains, or collision domains, in routing to limit where packets are forwarded on the
+network. Layer 2 broadcasts are limited to the same group. By default, all interfaces are in group 0. For example,
+if the FortiGate has 12 interfaces, only two may be in the same forwarding domain, which limits packets that are
+broadcast to those two interfaces. This reduces traffic on the rest of the network.
+Collision domains prevent the forwarding of ARP packets to all VLANs on an interface. Without collision
+domains, duplicate MAC addresses on VLANs may cause ARP packets to be duplicated. Duplicate ARP packets
+can cause some switches to reset. It's important to know what interfaces are part of which forwarding domains
+because this determines which interfaces can communicate with each other.
+To manually configure forwarding domains in transparent mode in the CLI:
+config system interface
+edit <interface_name>
+set forward-domain <integer>
+end
+To display the forward domains information in the CLI:
+diagnose netlink brctl domain <name> <id>
+Where <name> is the name of the forwarding domain to display and <id> is the domain ID.
+Sample output:
+diagnose netlink brctl domain ione 101
+show bridge root.b ione forward domain.
+id=101 dev=trunk_1 6
+To list the existing bridge MAC table in the CLI:
+diagnose netlink brctl name host <name>
+FortiOS 7.4.13 Administration Guide 4136
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4137 =====
+
+Troubleshooting
+Sample output:
+show bridge control interface root.b host.
+fdb: size=256, used=6, num=7, depth=2, simple=no
+Bridge root.b host table
+port no device devname mac addr ttl attributes
+2 7 wan2 02:09:0f:78:69:00 0 Local Static
+5 6 vlan_1 02:09:0f:78:69:01 0 Local Static
+3 8 dmz 02:09:0f:78:69:01 0 Local Static
+4 9 internal 02:09:0f:78:69:02 0 Local Static
+3 8 dmz 00:80:c8:39:87:5a 194
+4 9 internal 02:09:0f:78:67:68 8
+1 3 wan1 00:09:0f:78:69:fe 0 Local Static
+To list the existing bridge port list in the CLI:
+diagnose netlink brctl name port <name>
+Sample output:
+show bridge root.b data port.
+trunk_1 peer_dev=0
+internal peer_dev=0
+dmz peer_dev=0
+wan2 peer_dev=0
+wan1 peer_dev=0
+Checking wireless information
+Check wireless connections, stations, and interfaces when the problem is not caused by a physical interface.
+Troubleshooting station connection issues
+To check if a station entry is created on access control in the CLI:
+FG600B3909600253 # diagnose wireless-controller wlac -d sta
+* vf=0 wtp=70 rId=2 wlan=open ip=0.0.0.0 mac=00:09:0f:db:c4:03 rssi=0 idle=148 bw=0 use=2
+vf=0 wtp=70 rId=2 wlan=open ip=<example-ip> mac=00:25:9c:e0:47:88 rssi=-40 idle=0 bw=9 use=2
+Enabling diagnostics for a specific station
+This example uses the station MAC address to find where it is failing:
+FG600B3909600253 # diagnose wireless-controller wlac sta_filter 00:25:9c:e0:47:88 1
+Set filter sta 00:25:9c:e0:47:88 level 1
+FG600B3909600253 # 71419.245 <ih> IEEE 802.11 mgmt::disassoc <== 00:25:9c:e0:47:88 vap open rId 1
+wId 0 00:09:0f:db:c4:03
+71419.246 <dc> STA del 00:25:9c:e0:47:88 vap open rId 1 wId 0
+71419.246 <cc> STA_CFG_REQ(34) sta 00:25:9c:e0:47:88 del ==> ws (0-<example-ip>:5246) rId 1 wId 0
+FortiOS 7.4.13 Administration Guide 4137
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4138 =====
+
+Troubleshooting
+71419.246 <cc> STA del 00:25:9c:e0:47:88 vap open ws (0-<example-ip>:5246) rId 1 wId 0
+00:09:0f:db:c4:03 sec open reason I2C_STA_DEL
+71419.247 <cc> STA_CFG_RESP(34) 00:25:9c:e0:47:88 <== ws (0-<example-ip>:5246) rc 0 (Success).
+Performing a sniffer trace or packet capture
+When you troubleshoot networks and routing in particular, it helps to look inside the headers of packets to
+determine if they are traveling the route that you expect them to take. Packet sniffing is also known as network
+tap, packet capture, or logic analyzing.
+For more information on controlling GUI packet captures in the CLI, see Using the packet capture tool on page
+854.
+For FortiGates with NP2, NP4, or NP6 interfaces that are offloading traffic, disable
+offloading on these interfaces before you perform a trace or it will change the sniffer
+trace.
+Sniffing packets
+To perform a sniffer trace in the CLI:
+Before you start sniffing packets, you should prepare to capture the output to a file. A large amount of data may
+scroll by and you will not be able to see it without saving it first. One method is to use a terminal program like
+PuTTY to connect to the FortiGate CLI. Once the packet sniffing count is reached, you can end the session and
+analyze the output in the file.
+The general form of the internal FortiOS packet sniffer command is:
+# diagnose sniffer packet <interface_name> <'filter'> <verbose> <count> <tsformat>
+To stop the sniffer, type CTRL+C.
+<interface_name> The name of the interface to sniff, such as port1 or internal. This can also
+be any to sniff all interfaces.
+<'filter'> What to look for in the information the sniffer reads. none indicates no
+filtering, and all packets are displayed as the other arguments indicate.
+The filter must be inside single quotes (‘).
+<verbose> The level of verbosity as one of:
+l 1 - print header of packets
+l 2 - print header and data from IP of packets
+l 3 - print header and data from Ethernet of packets
+l 4 - print header of packets with interface name
+l 5 - print header and data from IP of packets with interface name
+l 6 - print header and data from Ethernet of packets with interface name
+FortiOS 7.4.13 Administration Guide 4138
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4139 =====
+
+Troubleshooting
+<count> The number of packets the sniffer reads before stopping. If you don't put a
+number here, the sniffer will run until you stop it with <CTRL+C>.
+<tsformat> The timestamp format.
+l a: absolute UTC time, yyyy-mm-dd hh:mm:ss.ms
+l l: absolute LOCAL time, yyyy-mm-dd hh:mm:ss.ms
+l otherwise: relative to the start of sniffing, ss.ms
+Simple sniffing example:
+# diagnose sniffer packet port1 none 1 3.
+This displays the next three packets on the port1 interface using no filtering, and verbose level 1. At this
+verbosity level, you can see the source IP and port, the destination IP and port, action (such as ack), and
+sequence numbers.
+In the output below, port 443 indicates these are HTTPS packets and that <example-ip> is both sending and
+receiving traffic.
+Head_Office_620b # diagnose sniffer packet port1 none 1 3
+interfaces=[port1]
+filters=[none]
+0.545306 <example-ip>.52989 -> <example-ip>.443: psh 3177924955 ack 1854307757
+0.545963 <example-ip>.443 -> <example-ip>.52989: psh 1854307757 ack 3177925808
+0.562409 <example-ip>.52988 -> <example-ip>.443: psh 4225311614 ack 3314279933
+Using packet capture in a firewall policy
+FortiGate can capture packets matching a firewall policy. You can enable capture-packet in the firewall policy.
+To use packet capture, the FortiGate must have a disk and logging must be enabled in the firewall policy.
+For information about using the packet capture tool in the GUI, see Using the packet capture tool on page 854.
+To enable packet capture in a policy in the GUI:
+1. Go to Policy & Objects > Firewall Policy and click Create New.
+2. Enter a name for the policy and configure the required settings.
+3. Enable Log Allowed Traffic and select Security Events or All Sessions.
+4. Enable Capture Packets.
+5. Click OK.
+To enable packet capture in a policy in the CLI:
+config firewall policy
+edit <id>
+set action accept
+set logtraffic {all | utm}
+set capture-packet enable
+FortiOS 7.4.13 Administration Guide 4139
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4140 =====
+
+Troubleshooting
+next
+end
+To view the packet capture:
+1. Go to Log & Report > Forward Traffic and select the log that matches the firewall policy.
+2. Select Details > Archived Data and click on the download button.
+3. Open the downloaded PCAP file in a packet analyzer tool, such as Wireshark.
+Debugging the packet flow
+Debug the packet flow when network traffic is not entering and leaving the FortiGate as expected. When
+debugging the packet flow in the CLI, each command configures a part of the debug action. The final command
+starts the debug.
+For information about using the debug flow tool in the GUI, see Using the debug flow tool on page 861.
+To trace the packet flow in the CLI:
+# diagnose debug flow trace start
+To follow packet flow by setting a flow filter:
+# diagnose debug flow {filter | filter6} <option>
+l Enter filter if your network uses IPv4.
+l Enter filter6 if your network uses IPv6.
+Replace <option> with one of the following variables:
+Variable Description
+addr IPv4 or IPv6 address
+clear clear filter
+daddr destination IPv4 or IPv6 address
+dport destination port
+negate inverse IPv4 or IPv6 filter
+FortiOS 7.4.13 Administration Guide 4140
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4141 =====
+
+Troubleshooting
+Variable Description
+port port
+proto protocol number
+saddr source address
+sport source port
+vd index of virtual domain; -1 matches all
+If FortiGate is connected to FortiAnalyzer or FortiCloud, the diagnose debug flow output
+will be recorded as event log messages and then sent to the devices. Do not run this
+command longer than necessary, as it generates a significant amount of data.
+Flow monitoring does not work for traffic offloaded to NP6 or NP7 processors. To use
+the diagnose debug flow commands with sessions offloaded to NP6 or NP7 processors
+you can test the traffic flow using ICMP (ICMP traffic is not offloaded) or you can
+disable NP6 or NP7 offloading.
+You can use the following command to temporarily disable NP6 offloading of all traffic:
+diagnose npu {np6 | np6xlite | np6lite} fastpath disable
+You must disable NP7 offloading in the firewall policy that accepts the traffic that you
+are tracing, see Tracing packet flow on FortiGates with NP7 processors.
+You can also use the NP7 packet sniffer to sniff NP7 offloaded traffic without disabling
+NP7 offloading, see NP7 packet sniffer.
+To start flow monitoring with a specific number of packets:
+# diagnose debug flow trace start <N>
+To stop flow tracing at any time:
+# diagnose debug flow trace stop
+The following example shows the flow trace for a device with an IP address of 203.160.224.97:
+# diagnose debug enable
+# diagnose debug flow filter addr 203.160.224.97
+# diagnose debug flow show function-name enable
+# diagnose debug flow trace start 100
+Sample output: HTTP
+To observe the debug flow trace, connect to the website at the following address:
+https://www.fortinet.com
+Comment: SYN packet received:
+id=20085 trace_id=209 func=resolve_ip_tuple_fast
+line=2700 msg="vd-root received a packet(proto=6,
+<example-ip>:1487->203.160.224.97:80) from port5."
+FortiOS 7.4.13 Administration Guide 4141
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4142 =====
+
+Troubleshooting
+SYN sent and a new session is allocated:
+id=20085 trace_id=209 func=resolve_ip_tuple line=2799
+msg="allocate a new session-00000e90"
+Lookup for next-hop gateway address:
+id=20085 trace_id=209 func=vf_ip4_route_input line=1543
+msg="find a route: gw-<example-ip> via port6"
+Source NAT, lookup next available port:
+id=20085 trace_id=209 func=get_new_addr line=1219
+msg="find SNAT: IP-<example-ip>, port-31925"
+direction“
+Matched security policy. Check to see which policy this session matches:
+id=20085 trace_id=209 func=fw_forward_handler line=317
+msg="Allowed by Policy-3: SNAT"
+Apply source NAT:
+id=20085 trace_id=209 func=__ip_session_run_tuple
+line=1502 msg="SNAT <example-ip>-><example-ip>:31925"
+SYN ACK received:
+id=20085 trace_id=210 func=resolve_ip_tuple_fast line=2700
+msg="vd-root received a packet(proto=6, 203.160.224.97:80-
+><example-ip>:31925) from port6."
+Found existing session ID. Identified as the reply direction:
+id=20085 trace_id=210 func=resolve_ip_tuple_fast line=2727
+msg="Find an existing session, id-00000e90, reply direction"
+Apply destination NAT to inverse source NAT action:
+id=20085 trace_id=210 func=__ip_session_run_tuple
+line=1516 msg="DNAT <example-ip>:31925-
+><example-ip>:1487"
+Lookup for next-hop gateway address for reply traffic:
+id=20085 trace_id=210 func=vf_ip4_route_input line=1543
+msg="find a route: gw-<example-ip> via port5"
+ACK received:
+id=20085 trace_id=211 func=resolve_ip_tuple_fast line=2700
+msg="vd-root received a packet(proto=6,
+<example-ip>:1487->203.160.224.97:80) from port5."
+Match existing session in the original direction:
+id=20085 trace_id=211 func=resolve_ip_tuple_fast line=2727
+msg="Find an existing session, id-00000e90, original
+direction"
+Apply source NAT:
+id=20085 trace_id=211 func=__ip_session_run_tuple
+line=1502 msg="SNAT <example-ip>-><example-ip>:31925"
+Receive data from client:
+id=20085 trace_id=212 func=resolve_ip_tuple_fast
+FortiOS 7.4.13 Administration Guide 4142
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4143 =====
+
+Troubleshooting
+line=2700 msg="vd-root received a packet(proto=6,
+<example-ip>:1487->203.160.224.97:80) from port5."
+Match existing session in the original direction:
+id=20085 trace_id=212 func=resolve_ip_tuple_fast
+line=2727 msg="Find an existing session, id-00000e90,
+original direction"
+Apply source NAT:
+id=20085 trace_id=212 func=__ip_session_run_tuple
+line=1502 msg="SNAT <example-ip>-><example-ip>:31925"
+Receive data from server:
+id=20085 trace_id=213 func=resolve_ip_tuple_fast
+line=2700 msg="vd-root received a packet(proto=6,
+203.160.224.97:80-><example-ip>:31925) from port6."
+Match existing session in reply direction:
+id=20085 trace_id=213 func=resolve_ip_tuple_fast
+line=2727 msg="Find an existing session, id-00000e90,
+reply direction"
+Apply destination NAT to inverse source NAT action:
+id=20085 trace_id=213 func=__ip_session_run_tuple
+line=1516 msg="DNAT <example-ip>:31925-
+><example-ip>:1487"
+Sample output: IPsec (policy-based)
+id=20085 trace_id=1 msg="vd-root received a packet(proto=1, <example-ip>:1-><example-ip>:8) from
+internal."
+id=20085 trace_id=1 msg="allocate a new session-00001cd3"
+id=20085 trace_id=1 msg="find a route: gw-66.236.56.230 via wan1"
+id=20085 trace_id=1 msg="Allowed by Policy-2: encrypt"
+id=20085 trace_id=1 msg="enter IPsec tunnel-RemotePhase1"
+id=20085 trace_id=1 msg="encrypted, and send to 15.215.225.22 with source 66.236.56.226"
+id=20085 trace_id=1 msg="send to 66.236.56.230 via intf-wan1“
+id=20085 trace_id=2 msg="vd-root received a packet (proto=1, <example-ip>:1-1071.55.10:8) from
+internal."
+id=20085 trace_id=2 msg="Find an existing session, id-00001cd3, original direction"
+id=20085 trace_id=2 msg="enter IPsec ="encrypted, and send to 15.215.225.22 with source
+66.236.56.226“ tunnel-RemotePhase1"
+id=20085 trace_id=2 msgid=20085 trace_id=2 msg="send to 66.236.56.230 via intf-wan1"
+Testing a proxy operation
+To monitor proxy operations in the CLI:
+diagnose test application <application> <option>
+To display a list of available application values:
+diagnose test application ?
+FortiOS 7.4.13 Administration Guide 4143
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4144 =====
+
+Troubleshooting
+To display a list of available option values:
+diagnose test application <application> ?
+The <option> value will depend on the application value used in the command.
+For example, if the application is http, the CLI command that displays the <option> values is:
+diagnose test application http ?
+Displaying detail Hardware NIC information
+Monitoring the hardware NIC is important because interface errors indicate data link or physical layer issues
+which may impact the performance of the FortiGate.
+To monitor hardware network operations in the CLI:
+diagnose hardware deviceinfo nic <interface>
+or
+diagnose netlink interface list <interface>
+Sample output:
+The following is sample output when the <interface> is set to port1:
+# diagnose netlink interface list port1
+if=port1 family=00 type=1 index=3 mtu=1500 link=0 master=0
+flags=up broadcast run multicast
+Qdisc=mq hw_addr=00:0c:29:fc:18:54 broadcast_addr=ff:ff:ff:ff:ff:ff
+stat: rxp=61149 txp=81109 rxb=5839308 txb=52396373 rxe=0 txe=0 rxd=0 txd=0 mc=95 collision=0 @
+time=1678486883
+re: rxl=0 rxo=0 rxc=0 rxf=0 rxfi=0 rxm=0
+te: txa=0 txc=0 txfi=0 txh=0 txw=0
+misc rxc=0 txc=0
+Field descriptions
+The diagnose hardware deviceinfo nic and diagnose netlink interface list commands display lists of
+error names and values that are related to hardware.
+The following table describes possible hardware errors:
+Field Description
+Rx packets (rxp) Number of received packets.
+Tx packets (txp) Number of transmitted packets.
+Rx bytes (rxb) Number of received bytes.
+FortiOS 7.4.13 Administration Guide 4144
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4145 =====
+
+Troubleshooting
+Field Description
+Tx bytes (txb) Number of transmitted bytes.
+Rx_Errors (rxe) = rx
+error count
+Bad frame was marked as error by PHY.
+Tx_Errors (txe) =
+Tx_Aborted_Errors
+ECOL (Excessive Collisions Count); only valid in half-duplex mode.
+Rx_CRC_Errors +
+Rx_Length_Errors -
+Rx_Align_Errors
+This error is only valid in 10/100M mode.
+Rx_Dropped (rxd)
+or
+Rx_No_Buffer_
+Count
+Running out of buffer space.
+Tx_Dropped (txd) Number of dropped packet.
+Multicast (mc) Number of multicast packets received.
+Collisions Total number of collisions experienced by the transmitter; valid in half-duplex mode.
+Rx_Length_Errors
+(rxl)
+Number of packets dropped due to invalid length.
+Rx_Over_Errors
+(rxo)
+Receive FIFO overflow event counter.
+Rx_CRC_Errors
+(rxc)
+Number of received packets with Frame CRC error.
+Rx_Frame_Errors
+(rxf)
+Same as Rx_Align_Errors. This error is only valid in 10/100M mode.
+Rx_FIFO_Errors
+(rxfi)
+Same as Rx_Missed_Errors - a missed packet count
+Rx_Missed_Errors
+(rxm)
+Equals Rx_FIFO_Errors + CEXTERR (Carrier Extension Error Count). Only valid in 1000M
+mode, which is marked by PHY.
+Tx_Aborted_Errors
+(txa)
+See Tx_Errors.
+Tx_Carrier_Errors
+(txc)
+The PHY should assert the internal carrier sense signal during every transmission.
+Failure to do so may indicate that the link has failed or the PHY has an incorrect link
+configuration. This register only increments if transmits are enabled. This register isn't
+valid in internal SerDes 1 mode (TBI mode for the 82544GC/EI) and is valid only when
+the Ethernet controller is operating at full duplex.
+Tx_FIFO_Errors
+(txfi)
+Number of Frame transmission error due to underflow.
+FortiOS 7.4.13 Administration Guide 4145
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4146 =====
+
+Troubleshooting
+Field Description
+Tx_Heartbeat_
+Errors (txh)
+Number of heartbeat error.
+Tx_Window_Errors
+(txw)
+Late Collisions (LATECOL) Count
+Late collisions are collisions that occur after 64-byte time into the transmission of the
+packet while working in 10 to 100 Mb/s data rate and 512-byte time into the
+transmission of the packet while working in the 1,000 Mb/s data rate. This register only
+increments if transmits are enabled and the device is in half-duplex mode.
+Rx compressed
+(misc rxc)
+Number of received compressed packets.
+Tx compressed
+(misc txc)
+Number of transmitted compressed packets.
+Tx_Single_Collision_
+Frames
+Counts the number of times that a successfully transmitted packet encountered a
+single collision.
+The value increments only if transmits are enabled and the Ethernet controller is in half-
+duplex mode.
+Tx_Multiple_
+Collision_Frames
+A Multiple Collision Count which indicates the number of times that a transmit
+encountered more than one collision, but less than 16. The value increments only if
+transmits are enabled and the Ethernet controller is in half-duplex mode.
+Tx_Deferred Counts defer events.
+A deferred event occurs when the transmitter cannot immediately send a packet due
+to:
+l The medium being busy because another device is transmitting.
+l The IPG timer has not expired.
+l Half-duplex deferral events are occurring.
+l XOFF frames are being received .
+l The link is not up.
+This register only increments if transmits are enabled. This counter does not increment
+for streaming transmits that are deferred due to TX IPG.
+Rx_Frame_Too_
+Longs
+The Rx frame is oversized.
+Rx_Frame_Too_
+Shorts
+The Rx frame is too short.
+Rx_Align_Errors This error is only valid in 10/100M mode.
+Symbol Error Count Counts the number of symbol errors (SYMERRS) between reads.
+The count increases for every bad symbol that's received, whether or not a packet is
+currently being received and whether or not the link is up. This register increments only
+in internal SerDes mode.
+FortiOS 7.4.13 Administration Guide 4146
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4147 =====
+
+Troubleshooting
+Performing a traffic trace
+Traffic tracing allows you to follow a specific packet stream. This is useful when you want to confirm that
+packets are using the route you expect them to take on your network.
+To view traffic sessions:
+Use this command to view the characteristics of a traffic session though specific security policies.
+diagnose sys session
+To trace per-packet operations for flow tracing:
+diagnose debug flow
+To trace per-Ethernet frame:
+diagnose sniffer packet
+To trace a route from a FortiGate to a destination IP address:
+# execute traceroute www.fortinet.com
+traceroute to www.fortinet.com (66.171.121.34), 32 hops max, 84 byte packets
+1 <example-ip> 0.637 ms 0.653 ms 0.279 ms
+2 209.87.254.221 <static-209-87-254-221.storm.ca> 2.448 ms 2.519 ms 2.458 ms
+3 209.87.239.129 <core-2-g0-2.storm.ca> 2.917 ms 2.828 ms 9.324 ms
+4 209.87.239.199 <core-3-bdi1739.storm.ca> 13.248 ms 12.401 ms 13.009 ms
+5 216.66.41.113 <v502.core1.tor1.he.net> 17.181 ms 12.422 ms 12.268 ms
+6 184.105.80.9 <100ge1-2.core1.nyc4.he.net> 21.355 ms 21.518 ms 21.597 ms
+7 198.32.118.41 <ny-paix-gni.twgate.net> 83.297 ms 84.416 ms 83.782 ms
+8 203.160.228.217 <217-228-160-203.TWGATE-IP.twgate.net> 82.579 ms 82.187 ms 82.066 ms
+9 203.160.228.229 <229-228-160-203.TWGATE-IP.twgate.net> 82.055 ms 82.455 ms 81.808 ms
+10 203.78.181.2 82.262 ms 81.572 ms 82.015 ms
+11 203.78.186.70 83.283 ms 83.243 ms 83.293 ms
+12 66.171.127.177 84.030 ms 84.229 ms 83.550 ms
+13 66.171.121.34 <www.fortinet.com> 84.023 ms 83.903 ms 84.032 ms
+14 66.171.121.34 <www.fortinet.com> 83.874 ms 84.084 ms 83.810 ms
+Using a session table
+A session is a communication channel between two devices or applications across the network. Sessions allow
+FortiOS to inspect and act on a sequential group of packets in a session all at once instead of inspecting each
+packet individually. Each session has an entry in the session table that includes important information about the
+session.
+You can view FortiGate session tables from the FortiGate GUI or CLI. The most useful troubleshooting data
+comes from the CLI. The session table in the GUI also provides useful summary information, particularly the
+current policy number that the session is using.
+FortiOS 7.4.13 Administration Guide 4147
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4148 =====
+
+Troubleshooting
+When to use a session table
+Session tables are useful when verifying open connections. For example, if you have a web browser open to
+browse the Fortinet website, you would expect a session entry from your computer on port 443 to the IP
+address for the Fortinet website.
+You can also use a session table to investigate why there are too many sessions for FortiOS to process.
+To view session information in the GUI, go to Dashboard > FortiView Sessions. This view requires that a logging
+device is configured, and traffic log is enabled on a policy.
+Finding the security policy for a specific connection
+Every application or device that connects to another application or device must open a communication channel
+to exchange information. A stateful firewall tracks these sessions to ensure only packets exchanged in
+accordance to the session state are allowed to pass through the firewall. This includes verifying there is a policy
+match for such traffic, where features such as NATing, UTM scanning, and traffic shaping can be applied. Each
+session will have an entry in the session table.
+If a secure web browser session is not working properly, you can check the session table to ensure the session
+is still active and going to the proper address. The session table can also tell you the security policy number it
+matches, so you can check what is happening in that policy.
+1. Get the connection information.
+To identify the session you want, you may need:
+l The source IP address
+l The destination IP address
+l The port number used by the protocol. Common ports are:
+l Port 443 (HTTPS for SSL encrypted web browsing)
+l Port 22 (SSH for Secure Shell)
+l Port 25 (SMTP for Mail Transfer)
+2. Find the session and policy ID
+Go to Dashboard > FortiView Sessions. You can filter on each column header or you can type in a search by
+filterable columns.
+For example, to filter on source, destination and port number, either go to each column header and select your
+value, or go to the search bar and select the column name and value one by one.
+Additionally, you can select more columns to display by mousing over the column header, and clicking on the
+gear icon that displays.
+FortiOS 7.4.13 Administration Guide 4148
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4149 =====
+
+Troubleshooting
+This menu allows you to add or remove columns, as well as export the entire displayed sessions table to either a
+CSV or JSON file for further analysis.
+Select Policy to add Policy to the view and click Apply. You can now identify the policy ID based on your search
+criteria.
+CLI
+Alternatively, instead of using the GUI you can also view the sessions from the CLI. The CLI has many filtering
+options and it displays granular information about each session.
+To view session data in the CLI:
+diagnose sys session list
+To filter session data:
+diagnose sys session filter <option>
+The values for <option> include the following:
+Value Definition
+clear Clear session filter
+dintf Destination interface
+dport Destination port
+dst Destination IP address
+FortiOS 7.4.13 Administration Guide 4149
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4150 =====
+
+Troubleshooting
+Value Definition
+duration Duration of the session
+expire Expire
+ext-src Add a source address to the extended match list.
+ext-dst Add a destination address to the extended match list.
+ext-src-negate Add a source address to the negated extended match list.
+ext-dst-negate Add a destination address to the negated extended match list.
+negate Inverse filter
+nport NAT'd source port
+nsrc NAT'd source ip address
+policy Policy ID
+proto Protocol number
+proto-state Protocol state
+session-state1 Session state1
+session-state2 Session state2
+sintf Source interface
+sport Source port
+src Source IP address
+vd Index of virtual domain, -1 matches all
+vd-name Name of virtual domain. -1 or any matches all.
+An example of a TCP session:
+# diagnose sys session list
+session info: proto=6 proto_state=11 duration=59 expire=3586 timeout=3600 refresh_dir=both
+flags=00000000 socktype=0 sockport=443 av_idx=9 use=5
+origin-shaper=low-priority prio=4 guarantee 0Bps max 131072000Bps traffic 1826Bps drops 0B
+reply-shaper=low-priority prio=4 guarantee 0Bps max 131072000Bps traffic 1826Bps drops 0B
+per_ip_shaper=
+class_id=0 shaping_policy_id=2 ha_id=0 policy_dir=0 tunnel=/ vlan_cos=0/255
+state=redir local may_dirty os rs url_cat_valid
+statistic(bytes/packets/allow_err): org=10941/16/1 reply=3633/11/1 tuples=3
+tx speed(Bps/kbps): 0/0 rx speed(Bps/kbps): 0/0
+orgin->sink: org pre->post, reply pre->post dev=6->3/3->6 gwy=<example-ip>/0.0.0.0
+hook=post dir=org act=snat <example-ip>:49397->54.177.212.176:443(<example-ip>:49397)
+hook=pre dir=reply act=dnat 54.177.212.176:443-><example-ip>:49397(<example-ip>:49397)
+hook=post dir=reply act=noop 54.177.212.176:443-><example-ip>:49397(0.0.0.0:0)
+pos/(before,after) 0/(0,0), 0/(0,0)
+misc=0 policy_id=9 pol_uuid_idx=15905 auth_info=0 chk_client_info=0 vd=0
+serial=000016a0 tos=40/40 app_list=0 app=0 url_cat=142
+FortiOS 7.4.13 Administration Guide 4150
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4151 =====
+
+Troubleshooting
+rpdb_link_id=00000000 ngfwid=n/a
+npu_state=0x000100
+no_ofld_reason: redir-to-av
+In the above example, a TCP/443 session is opened between the source (<example-ip>) and the destination
+fortinet.com (54.177.212.176). To further understand the information, we will examine some fields in the output.
+Session info:
+session info: proto=6 proto_state=11 duration=59 expire=3586 timeout=3600 refresh_dir=both
+flags=00000000 socktype=0 sockport=443 av_idx=9 use=5
+Session info field Description
+proto The protocol number. Common protocols used are:
+ICMP (proto 1)
+TCP (proto 6)
+UDP (proto 17)
+proto_state The state of the connection with respect to their protocol.
+duration Duration of the session (value in seconds).
+expire A countdown from the 'timeout' since the last packet passing via session
+(value in seconds).
+timeout An indicator of how long the session can stay open in the current state
+(value in seconds).
+Session state:
+state=redir local may_dirty os rs url_cat_valid
+State Explanation[KL1] 
+may-dirty Session details are allowed to be altered.
+dirty The session has been altered (requires may-dirty).
+npu The session goes through an acceleration ship.
+npd The session is denied for hardware acceleration.
+npr The session is eligible for hardware acceleration (more information with npu
+info: offload=x/y).
+rem The session is allowed to be reset in case of a memory shortage.
+eph The session is ephemeral.
+oe The session is part of the IPsec tunnel (from the originator).
+re The session is part of the IPsec tunnel (from the responder).
+FortiOS 7.4.13 Administration Guide 4151
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4152 =====
+
+Troubleshooting
+State Explanation[KL1] 
+local The session is attached to the local FortiGate IP stack.
+br The session is bridged (VDOM is in transparent mode).
+redir The session is redirected to an internal FortiGate proxy.
+wccp The session is intercepted by wccp process.
+nlb The session is from a load-balanced vip.
+log The session is being logged.
+log-start The session is being logged when it starts as well (generate two logs for one
+session, start and end).
+os The session is shaped in the origin direction.
+rs The session is shaped by the reply direction.
+ndr The session is inspected by IPS signature.
+nds The session is inspected by IPS anomaly.
+auth The session is subject to authentication.
+authed The session was successfully authenticated.
+block The session was re-evaluated to block (policy changed).
+ext (Deprecated) The session is handled by a session helper.
+app_ntf Session matched a policy entry that contains set block-notification
+enable.
+F00 After enabling traffic log in policy, the session will have this flag.
+pol_sniff After enabling packet capture in policy, session will have this flag.
+rst_tcp Flag visible when firewall policy has timeout-send-rst enabled.
+synced The session has been synchronized to HA peers, as seen on session-pickup  
+enabled master.
+syn_ses The session has been synchronized from master to this peer, as seen on
+session-pickup enabled backup or HA-peer device.
+need_sync With 30 second HA sync delay. The session will be synced when reaching
+30 seconds of lifetime.
+complex The session is handled by a session helper.
+app_valid The relevant rule has app control profile applied and FortiGate IPS engine
+was able to identify the application. (The session will have a field such as 
+app= indicating the application.)
+url_cat_valid The relevant rule has web filter profile applied and FortiGate was able to
+identify the web category. (The session will have a field such as url_cat=
+indicating the category.)
+FortiOS 7.4.13 Administration Guide 4152
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4153 =====
+
+Troubleshooting
+Traffic directions:
+orgin->sink: org pre->post, reply pre->post dev=6->3/3->6 gwy=<example-ip>/0.0.0.0
+hook=post dir=org act=snat <example-ip>:49397->54.177.212.176:443(<example-ip>:49397)
+hook=pre dir=reply act=dnat 54.177.212.176:443-><example-ip>:49397(<example-ip>:49397)
+hook=post dir=reply act=noop 54.177.212.176:443-><example-ip>:49397(0.0.0.0:0)
+dev=6->3/3->6 indicates the ingress and egress interfaces in both directions. The device and interface index
+can be obtained from:
+# diagnose netlink interface list
+In this case:
+# diagnose netlink interface list | grep “index=6 “
+if=port2 family=00 type=1 index=6 mtu=1500 link=0 master=0
+# diagnose netlink interface list | grep "index=3 "
+if=port1 family=00 type=1 index=3 mtu=1500 link=0 master=0
+gwy=<example-ip>/0.0.0.0 indicates the gateway used in the original direction.
+The next two lines display the source and destination, and NAT'd address in each direction:
+<source_IP>:<source_port>-><destination_IP>:<destination_port>(<NAT_IP>:<NAT_port>)
+Miscellaneous:
+misc=0 policy_id=9 pol_uuid_idx=15905 auth_info=0 chk_client_info=0 vd=0
+serial=000016a0 tos=40/40 app_list=0 app=0 url_cat=142
+rpdb_link_id=00000000 ngfwid=n/a
+npu_state=0x000100
+no_ofld_reason: redir-to-av
+Misc fields Description
+policy_id Policy ID matching this session
+pol_uuid_idx Policy index
+auth_info Indicates if the session holds any authentication data (1) or not (0).
+vd VDOM index. In the case where multiple VRFs are configured, VRF IDs can
+be obtained from the VD value:
+vd=0:20
+reflect info If this exists, it indicates an auxiliary or reflect session that created for the
+existing session.
+npu_state Provides the offloading details for the session, with the flag field which
+indicates whether this session is handling regular traffic (flag=0x81) or
+IPsec traffic (flag=0x82).
+no_ofld_reason The reason this session is not offloaded to NPU. For example, redir-to-av
+means the session requires AV inspection
+FortiOS 7.4.13 Administration Guide 4153
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4154 =====
+
+Troubleshooting
+Protocol states
+Each protocol has its unique state which the firewall learns by examining the protocol headers. It is important for
+the firewall to keep the protocol state in order to anticipate the next packet it receives and to reject any
+unsolicited packets.
+ICMP (proto 1)
+There are no states for ICMP. It always shows proto_state=00.
+TCP (proto 6)
+The proto_state is a 2-digit number because the FortiGate is a keeps track of both directions of the session.
+The state values are:
+State Value
+NONE 0
+ESTABLISHED 1
+SYN_SENT 2
+SYN & SYN/ACK 3
+FIN_WAIT 4
+TIME_WAIT 5
+CLOSE 6
+CLOSE_WAIT 7
+LAST_ACK 8
+LISTEN 9
+UDP (proto 17)
+Even though UDP is a stateless protocol, FortiGate keeps track of the following states:
+State Value
+UDP Reply not seen 0
+UDP Reply seen 1
+Examples
+To examine the firewall session list in the CLI:
+You can use a filter to limit the sessions displayed by source, destination address, port, or NAT'd address. To
+use more than one filter, enter a separate line for each value.
+The following example filters the session list based on a source address of <example-ip>:
+FortiOS 7.4.13 Administration Guide 4154
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4155 =====
+
+Troubleshooting
+FGT# diagnose sys session filter src <example-ip>
+FGT# diagnose sys session list
+The following example filters the session list based on a destination address of <example-ip>.
+FGT# diagnose sys session filter dst <example-ip>
+FGT# diagnose sys session list
+To clear all sessions corresponding to a filter:
+FGT# diagnose sys session filter dst <example-ip>
+FGT# diagnose sys session clear
+Checking source NAT information
+Checking source NAT is important when you are troubleshooting from the remote end of the connection outside
+the firewall.
+To check the source NAT information in the CLI:
+When you display the session list in the CLI, you can match the NAT'd source address (nsrc) and port (nport).
+This is useful when multiple internal IP addresses are NAT'd to a common external-facing source IP address.
+FGT# diagnose sys session filter nsrc <example-ip>
+FGT# diagnose sys session filter nport 8888
+FGT# diagnose sys session list
+Finding object dependencies
+You may be prevented from deleting a configuration object when other configuration objects depend on it. You
+can use the GUI or CLI to identify objects which depend on, or make reference to the configuration you are
+trying to delete. Additionally, if you have a virtual interface with dependent objects, you will need to find and
+remove those dependencies before deleting the interface.
+To remove interface object dependencies in the GUI:
+1. Go to Network > Interfaces. The Ref. column displays the number of objects that reference this interface.
+2. Select the number in the Ref . column for the interface. A window listing the dependencies appears.
+3. Use these detailed entries to locate and remove object references to this interface. The trash can icon is
+enabled after all the object dependencies are removed.
+4. Remove the interface by selecting the check box for the interface, and select Delete.
+To find object dependencies in the CLI:
+When running multiple VDOMs, use the following command in the global configuration only.
+diagnose sys cmdb refcnt show <path.object.mkey>
+The command searches for the named object in both the most recently used global and VDOM configurations.
+FortiOS 7.4.13 Administration Guide 4155
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4156 =====
+
+Troubleshooting
+Examples
+To verify which objects a security policy with an ID of 1 refers to:
+diagnose sys cmdb refcnt show firewall.policy.policyid 1
+To check what is referred to by interface port1:
+diagnose sys cmdb refcnt show system.interface.name port1
+To show all dependencies for an interface:
+diagnose sys cmdb refcnt show system.interface.name <interface name>
+Sample output:
+In this example , the interface has dependent objects, including four address objects, one VIP, and three
+security policies.
+entry used by table firewall.address:name '10.98.23.23_host’
+entry used by table firewall.address:name 'NAS'
+entry used by table firewall.address:name 'all'
+entry used by table firewall.address:name 'fortinet.com'
+entry used by table firewall.vip:name 'TORRENT_10.0.0.70:6883'
+entry used by table firewall.policy:policyid '21'
+entry used by table firewall.policy:policyid '14'
+entry used by table firewall.policy:policyid '19'
+Diagnosing NPU-based interfaces
+You can use the commands in this section to diagnose sessions offloaded to network processors (also called
+NPUs or NPs) in your FortiGate. Most FortiGates contain one or more of the following NPUs:
+l NP7 or NP7Lite
+l NP6, NP6XLite or NP6Lite
+You can find your FortiGate unit in the Hardware Acceleration Guide to determine its NPU configuration.
+Normally you can use the diagnose debug flow command to view sessions. However, this command only
+displays sessions processed by the CPU (also called software sessions). To view sessions offloaded to NPUs
+(also called hardware sessions), you must use the commands and techniques described in this section.
+Alternatively, you can disable NPU offloading and then use the diagnose debug flow
+command. You should only disable the NPU functionality for troubleshooting purposes.
+Diagnosing NP7 or NP7Lite sessions
+Use the following command to list the NP7 processors in your FortiGate unit and the interfaces that they
+connect to:
+diagnose npu np7 port-list
+FortiOS 7.4.13 Administration Guide 4156
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4157 =====
+
+Troubleshooting
+Use the following command to list the NP7Lite processors in your FortiGate unit and the interfaces that they
+connect to:
+diagnose npu np7lite port-list
+To use the NP7 packet sniffer
+On FortiGates with NP7 and NP7Lite processors, you can use the following command to view sessions:
+diagnose npu sniffer {start | stop | filter}
+Here is a basic example to sniff offloaded TCP packets received by the port23 interface. In the following
+example:
+l The first line clears the filter.
+l The second line sets the sniffer to look for packets on port23.
+l The third line looks for packets exiting the interface.
+l The fourth line looks for TCP packets.
+l The fifth line starts the sniffer.
+l The sixth line starts displaying the packets on the CLI.
+diagnose npu sniffer filter
+diagnose npu sniffer filter intf port23
+diagnose npu sniffer filter dir 1
+diagnose npu sniffer filter protocol 6
+diagnose npu sniffer start
+diagnose sniffer packet npudbg
+For more information, see NP7 packet sniffer or Tracing packet flow on FortiGates with NP7 processors.
+See this Fortinet Community article for an NP7 packet sniffer example: Troubleshooting Tip: Collecting NP7
+packet capture without disabling offload.
+Diagnosing NP6, NP6XLite or NP6Lite sessions
+Use either of the following commands to list the NP6 processors in your FortiGate unit and the interfaces that
+they connect to:
+get hardware npu np6 port-list
+diagnose npu np6 port-list
+Use the following command to list the NP6XLite processors in your FortiGate unit:
+get hardware npu np6xlite port-list
+Use either of the following commands to list the NP6Lite processors in your FortiGate unit:
+get hardware npu np6lite port-list
+diagnose npu np6lite port-list
+The output of all of these commands includes the device ID or dev_id of each NP processor. Only FortiGates
+with NP6 processors have multiple dev_ids. On FortiGates with one NP6, NP6Xlite, or NP6Lite processor, dev_
+id is always 0.
+To diagnose NP6, NP6XLite, or NP6 sessions, disable NPU offloading.
+diagnose npu <processor> fastpath disable <dev_id>
+FortiOS 7.4.13 Administration Guide 4157
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4158 =====
+
+Troubleshooting
+Then use the diagnose debug flow command to view sessions.
+Identifying the XAUI link used for a specific traffic stream
+The diagnose npu np6 xaui-hash command takes a 6-tuple input of the traffic stream to identify the NP6 XAUI
+link that the traffic passes through.
+This command is only available on the 38xxD, 39xxD, 34xxE, 36xxE, and 5001E series devices.
+Syntax
+diagnose npu np6 xaui-hash <interface> <proto> <src_ip> <dst_ip> <src_port> <dst_port>
+Variable Description
+<interface> The network interface that the packets are coming from.
+<proto> The proto number, 6 for TCP or 17 for UDP.
+<src_ip> The source IP address.
+<dst_ip> The destination IP address.
+<src_port> The source port.
+<dst_port> The destination port.
+Examples
+# diagnose npu np6 xaui-hash port1 6 1.1.1.1 2.2.2.1 4567 80
+NP6_ID: 0, XAUI_LINK: 2
+# diagnose npu np6 xaui-hash port1 6 1.1.1.1 2.2.2.1 4567 200
+NP6_ID: 6, XAUI_LINK: 2
+# diagnose npu np6 xaui-hash port1 6 1.1.1.1 2.2.2.1 4567 20
+NP6_ID: 1, XAUI_LINK: 2
+# diagnose npu np6 xaui-hash port1 6 1.1.1.1 2.2.2.1 4567 23
+NP6_ID: 1, XAUI_LINK: 1
+The NP6_ID is the NP index of the model that is being used. It can be found with the diagnose npu np6 port-
+list command.
+Date and time settings
+Fortinet support may ask you to check the date and time settings for log message timestamp synchronization
+and for certificates that have a time requirement to check for validity.
+FortiOS 7.4.13 Administration Guide 4158
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4159 =====
+
+Troubleshooting
+To check time settings:
+execute time
+To check date settings:
+execute date
+If all devices have the same time, it helps to correlate log entries from different devices.
+execute time
+current time is: 12:40:48
+last ntp sync:Thu Mar 16 12:00:21 2006
+execute date
+current date is: 2006-03-16
+To force synchronization with an NTP server:
+config system ntp
+set ntpsync {enable | disable}
+end
+If all devices have the same time, it helps to correlate log entries from different devices.
+Running the TAC report
+The Technical Assistance Center (TAC) report runs an exhaustive series of diagnostic commands. Some of the
+commands are only needed if you are using features, such as HA, VPN tunnels, or a modem. Fortinet support my
+ask you to use the report output to provide information about the current state of your FortiGate.
+Due the amount of output generated, the report may take a few minutes to run. If you are logging CLI output to
+a file, you can run this command to familiarize yourself with the diagnostic commands.
+To run the TAC report in the CLI:
+execute tac report
+Using the process monitor
+The Process Monitor displays running processes with their CPU and memory usage levels. Administrators can
+sort, filter, and terminate processes within the Process Monitor pane.
+To access the process monitor:
+1. Go to Dashboard > Status:
+l Left-click in the CPU or Memory widget and select Process Monitor.
+l Click the user name in the upper right-hand corner of the screen, then go to System > Process Monitor.
+The Process Monitor appears, which includes a line graph, donut chart, and process list.
+FortiOS 7.4.13 Administration Guide 4159
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4160 =====
+
+Troubleshooting
+2. Click the + beside the search bar to view which columns can be filtered.
+To kill a process within the process monitor:
+1. Select a process.
+2. Click the Kill Process dropdown.
+FortiOS 7.4.13 Administration Guide 4160
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4161 =====
+
+Troubleshooting
+3. Select one of the following options:
+l Kill: the standard kill option that produces one line in the crash log (diagnose debug crashlog read).
+l Force Kill: the equivalent to diagnose sys kill 9 <pid>. This can be viewed in the crash log.
+l Kill & Trace: the equivalent to diagnose sys kill 11 <pid>. This generates a longer crash log and
+backtrace. A crash log is displayed afterwards.
+Computing file hashes
+The following command computes the SHA256 file hashes for all of the files in a directory or directories:
+# diagnose sys filesystem hash <paths> -d [depth]
+<paths> Add up to 25 paths to show only the hash for the files at those paths.
+-d [depth] Specify the maximum depth of the traversal.
+This command can be used for troubleshooting and debugging the system. The file hashes of system files can
+be compared against known good system files to help identify any compromises made on the system files.
+To hash all filesystems:
+# diagnose sys filesystem hash
+Hash contents: /bin
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/syslogd -> /bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/acd -> /bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/httpsnifferd ->
+/bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/merged_daemons ->
+FortiOS 7.4.13 Administration Guide 4161
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4162 =====
+
+Troubleshooting
+/bin/init
+...
+/bin/init
+6e2e07782dc17b8693268989f8ba1a8858a73d5291fb521e315011731cefe412 /bin/setpci
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/wad_csvc_cs ->
+/bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/fds_notify ->
+/bin/init
+...
+Hash contents: /lib
+3dae8f9c15da465ffda24cebc1328725e98ee7c94a20e54af6ead7eaada45d9d /lib/libusb-1.0.so.0
+e50c6b5cad36b200d4903e4d7d5e5eac1f5c618d27fd6961011e28a892ed8866 /lib/libk5crypto.so.3
+b021ad6fb16ce1e881ca586036687c1b2ae9555805817ef394284528d9e71612 /lib/libgomp.so.1
+...
+To hash specific filesystem, add the name of the filesystem:
+# diagnose sys filesystem hash /sbin
+Hash contents: /sbin
+c1f81e67a53bcf70720748fe31c2380e95b4c3dfdb96957fd116fcf702bd797b /sbin/init
+Filesystem hash complete. Hashed 1 files.
+To hash multiple filesystems, add the names of the filesystems:
+Up to 25 file systems can be added.
+# diagnose sys filesystem hash /sbin /bin
+Hash contents: /sbin
+c1f81e67a53bcf70720748fe31c2380e95b4c3dfdb96957fd116fcf702bd797b /sbin/init
+Hash contents: /bin
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/syslogd -> /bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/acd -> /bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/httpsnifferd ->
+/bin/init
+5132b40a66fd4cf062adb42e2af43cb9aea0672cf885f12978e8de2f3137834b /bin/merged_daemons ->
+/bin/init
+To specify the maximum depth of the traversal:
+# diagnose sys filesystem hash /data2 -d 1
+Hash contents: /data2
+a0166e804dc3d9a68fcc8015cb2d214ec40f0609e8e2aecc0eb2e5bdffc45524 /data2/new_alert_msg
+7270b43899e0f72c7b9c94e66d64fd0e19881d91f74bd5ae6556eba045222e84 /data2/vir
+8092e73c6a68f3cb02c86155bf3e55b2c1ab793eafcdd538beb5aa998d4b6b82 /data2/vir.x
+2e29084d86f3925a0fb6bf96c4d83a6d3025fdd9cf8059ebcfc307153b9fd63b /data2/virext
+48ac27b0b5b10b3b0f3ab2f847406d524709c32117f6b721bb10448742bd5eb6 /data2/virext.x
+2e29084d86f3925a0fb6bf96c4d83a6d3025fdd9cf8059ebcfc307153b9fd63b /data2/virexdb
+601316a029b28757c44515e37f48de2985d9fe8ef5c318e5f67e51369cba09f0 /data2/virexdb.x
+7270b43899e0f72c7b9c94e66d64fd0e19881d91f74bd5ae6556eba045222e84 /data2/virfldb
+896b71b3d9b209d339213f9d4af4088d3addd891cd292e93b5168eddb36b599a /data2/virfldb.x
+FortiOS 7.4.13 Administration Guide 4162
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4163 =====
+
+Troubleshooting
+0af98283f9bcb7dff4974197f1c7f1b1013ec741c8cc6c1425119fb88f9a351b /data2/ffdb_map_default_
+res
+627d2aed79770f698dbfc2bc0889f8285d1ea596c2dace8e6d3e7f00e040d990 /data2/madb.dat
+96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7 /data2/signature_result
+ceab5e70a5368aa834842973241e1ae6ca49ff5c88afb6199e5d87e1749caeb1 /data2/revision_info_db
+7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6 /data2/alci.dat
+5840dfcf66d296be775e4e4d08bcdd014d1c91bd45e070587907d9eedab53e3e /data2/uwdb
+dc64fb8a291c7fc6d655474d00e2c42e7bb2b466de4489d33301f3ba82f64794 /data2/ffdb_pkg.tgz.x
+c66a6ccc586ce29d38854a6afee49c0464fdc0064b59c4a104544325fd1ff03f /data2/afdb
+Filesystem hash complete. Hashed 17 files.
+# diagnose sys filesystem hash /data2 -d 2
+Hash contents: /data2
+a0166e804dc3d9a68fcc8015cb2d214ec40f0609e8e2aecc0eb2e5bdffc45524 /data2/new_alert_msg
+7270b43899e0f72c7b9c94e66d64fd0e19881d91f74bd5ae6556eba045222e84 /data2/vir
+8092e73c6a68f3cb02c86155bf3e55b2c1ab793eafcdd538beb5aa998d4b6b82 /data2/vir.x
+2e29084d86f3925a0fb6bf96c4d83a6d3025fdd9cf8059ebcfc307153b9fd63b /data2/virext
+48ac27b0b5b10b3b0f3ab2f847406d524709c32117f6b721bb10448742bd5eb6 /data2/virext.x
+2e29084d86f3925a0fb6bf96c4d83a6d3025fdd9cf8059ebcfc307153b9fd63b /data2/virexdb
+601316a029b28757c44515e37f48de2985d9fe8ef5c318e5f67e51369cba09f0 /data2/virexdb.x
+7270b43899e0f72c7b9c94e66d64fd0e19881d91f74bd5ae6556eba045222e84 /data2/virfldb
+896b71b3d9b209d339213f9d4af4088d3addd891cd292e93b5168eddb36b599a /data2/virfldb.x
+0af98283f9bcb7dff4974197f1c7f1b1013ec741c8cc6c1425119fb88f9a351b /data2/ffdb_map_default_
+res
+627d2aed79770f698dbfc2bc0889f8285d1ea596c2dace8e6d3e7f00e040d990 /data2/madb.dat
+96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7 /data2/signature_result
+5ce22b4398f63fea2b47b7c1f00813a29851714993aee1269d3e95cbf43f4252 /data2/geodb/geoip.1
+81ad258e278019dbd34fd07ba33966a6ff04e3fa352dddfe9ff362ac26d3cc88
+/data2/config/cfg0000000001
+e0067eb3d67b21cf39f27cb3558c5fbdafbc2c17c2afc29ab776b08e9c777a13
+/data2/config/cfg0000000002
+e77ad7c6b5d620d49f0f11933baf633335621de848a4229c3724152fff9aa4fa
+/data2/config/cfg0000000003
+228a7ed52779ba23f41a2423bfa7dbe858f24433f1702161f27678df4894f358
+/data2/config/cfg0000000004
+fe9e7afe7a6ccb739cb45c8d8f3b985377242ab61cc8199fa33dd475db49420f
+/data2/config/cfg0000000005
+b632b77348a54a2479453ab0f2c9f8e3c1e910badc8fbfb3fb841acf8eb4e35e
+/data2/config/cfg0000000006
+baeccb81d75f1f31503d42d3526f8831044144051f562486a89f1c5e4dd46d9c
+/data2/config/cfg0000000007
+ceab5e70a5368aa834842973241e1ae6ca49ff5c88afb6199e5d87e1749caeb1 /data2/revision_info_db
+7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6 /data2/alci.dat
+5840dfcf66d296be775e4e4d08bcdd014d1c91bd45e070587907d9eedab53e3e /data2/uwdb
+dc64fb8a291c7fc6d655474d00e2c42e7bb2b466de4489d33301f3ba82f64794 /data2/ffdb_pkg.tgz.x
+c66a6ccc586ce29d38854a6afee49c0464fdc0064b59c4a104544325fd1ff03f /data2/afdb
+Filesystem hash complete. Hashed 25 files.
+FortiOS 7.4.13 Administration Guide 4163
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4164 =====
+
+Troubleshooting
+An error message is shown if an incorrect value is entered:
+# diagnose sys filesystem hash /test-path
+ERROR: Could not fetch info for path /test-path (No such file or directory)
+Filesystem hash complete. Hashed 0 files.
+# diagnose sys filesystem hash /bin -d 0
+ERROR: depth must be greater than zero. (0)
+Command fail. Return code -651
+Other commands
+You may be asked to provide the following information when you contact Fortinet support.
+l ARP table on page 4164
+l IP address on page 4167
+ARP table
+The ARP table is used to determine the destination MAC addresses of the network nodes, as well as the VLANs
+and ports that the nodes are reached from.
+To view the ARP table:
+# get system arp
+Address Age(min) Hardware Addr Interface
+<example-ip> 1 50:b7:c3:75:ea:dd internal7
+<example-ip> 0 28:f1:0e:03:2a:97 wan1
+<example-ip> 0 f4:f2:6d:37:b0:99 wan1
+To view the ARP cache in the system:
+# diagnose ip arp list
+index=14 ifname=internal7 <example-ip> 50:b7:c3:75:ea:dd state=00000004 use=2494 confirm=1995
+update=374 ref=3
+index=5 ifname=wan1 <example-ip> 28:f1:0e:03:2a:97 state=00000002 use=88 confirm=86 update=977639
+ref=2
+index=22 ifname=internal <example-ip> 00:0c:29:c6:79:3d state=00000004 use=3724 confirm=9724
+update=3724 ref=0
+index=5 ifname=wan1 224.0.1.140 01:00:5e:00:01:8c state=00000040 use=924202 confirm=930202
+update=924202 ref=1
+index=5 ifname=wan1 <example-ip> f4:f2:6d:37:b0:99 state=00000002 use=78 confirm=486 update=614
+ref=26
+index=14 ifname=internal7 <example-ip> state=00000020 use=172 confirm=1037790 update=78 ref=2
+FortiOS 7.4.13 Administration Guide 4164
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4165 =====
+
+Troubleshooting
+To view a summary of the ARP table:
+# diagnose sys device list root
+list virtual firewall root info:
+ip4 route_cache: table_size=65536 max_depth=2 used=31 total=34
+arp: table_size=16 max_depth=2 used=5 total=6
+proxy_arp: table_size=256 max_depth=0 used=0 total=0
+arp6: table_size=32 max_depth=1 used=3 total=3
+proxy_arp6: table_size=256 max_depth=0 used=0 total=0
+local table version=00000000 main table version=0000002b
+vf=root dev=root vrf=0
+vf=root dev=ssl.root vrf=0
+...
+vf=root dev=internal5 vrf=0
+ses=0/0 ses6=0/0 rt=0/0 rt6=0/0
+ARP request, cache, and reachable time
+When FortiGate tries to communication with a new destination it must resolve the destination's MAC address.
+The resolution depends on the IP address of the destination:
+l Directly connected destination: ARP request is sent for the destination IP address.
+l Non-directly connected destination: ARP request is sent for the gateway IP address of the exit interface.
+After the ARP request is sent and an ARP reply is received, the corresponding ARP entry is added to the ARP
+cache, allowing FortiOS to use the cached entries for subsequent traffic and reducing the sending of frequent
+ARP request.
+Entries in the ARP cache are valid for a duration equal to the actual ARP reachable time. The actual ARP
+reachable time is a random number between 50% and 150% of the base reachable time. The default base
+reachable time is 30 seconds, so the actual ARP reachable time is from 15 to 45 seconds. The actual ARP
+reachable time is recalculated and updated every five minutes. The frequency of ARP requests to populate the
+ARP cache and unicast ARP probes to refresh the ARP cache entries depend on the base ARP reachable time.
+Each ARP entry in the ARP cache includes its state and the number of objects that are currently using it. For
+example:
+index=5 ifname=wan1 224.0.1.140 01:00:5e:00:01:8c state=00000040 use=924202 confirm=930202
+update=924202 ref=1
+Based on the state assigned to the ARP entry, the ARP cache determines the validity of the entry. There are
+multiple possible states for an ARP entry, and the state-transition mechanism can be complex. Common states
+include the following:
+State Meaning Description
+000000002 or 0x02 REACHABLE An ARP response was received
+000000004 or 0x04 STALE No ARP response within the expected time
+000000008 or 0x08 DELAY A transition state between STALE and REACHABLE
+before Probes are sent out
+FortiOS 7.4.13 Administration Guide 4165
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4166 =====
+
+Troubleshooting
+State Meaning Description
+000000020 or 0x20 FAILED Did not manage to resolve within the maximum
+configured number of probes
+000000040 or 0x40 NOARP Device does not support ARP, e.g. IPsec interface
+000000080 or 0x80 PERMANENT A statically defined ARP entry
+Multiple factors affect the state-transition mechanism and whether an entry is used by other subsystems. ARP
+creation, ARP request/reply, neighbor lookup, routing, and others can cause an ARP entry to be in use or
+referenced. Regular and successful unicast ARP probes initiated by FortiGate help maintain an ARP entry in
+Reachable state. By default, FortiGate disables regular unicast ARP probes for the sessions that are offloaded to
+the network processor (NP).
+To set the ARP reachable time on an interface:
+config system interface
+edit port1
+set reachable-time <integer>
+next
+end
+reachable-time <integer> The reachable time (30000 to 3600000, default = 30000).
+ARP cache purging
+An ARP cache entry that is in the STALE (0x04) or FAILED (0x20) states with no references to it (ref=0) is
+eligible to be removed from the ARP cache using the garbage collection mechanism. The garbage collection
+mechanism runs every 30 seconds, and checks and removes ARP entries that have been stale, failed, or
+unreferenced longer than 60 seconds. Garbage collection is also triggered when the number of ARP entries
+exceeds the configured threshold. If the threshold is exceeded, no entries can be added to the ARP table.
+To set the maximum number of ARP entries threshold:
+config system global
+set arp-max-entry <integer>
+end
+arp-max-entry <integer> The maximum number of dynamically learned MAC addresses that can be
+added to the ARP table (131072 to 2147483647, default = 131072).
+ARP/ICMP6 probing for offloaded sessions
+By default, FortiOS does not regularly send ARP probes for sessions offloaded to the NP. This can cause issues
+in environments where a session is established and offloaded to the NP, but no traffic flows through the
+FortiGate for an extended period of time, causing ARP entries on the FortiGate to expire and the MAC address
+table of upstream or downstream devices, such as switches, to age out. When this happens, an ARP broadcast
+request is triggered for any subsequent traffic passing through the session that generates a broadcast ARP
+FortiOS 7.4.13 Administration Guide 4166
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4167 =====
+
+Troubleshooting
+request within the upstream or downstream switch network. To mitigate this, enable sending regular ARP
+probes for offloaded sessions.
+To enable sending ARP/ICMP6 probing packets to update neighbors for offloaded sessions:
+config system global
+set npu-neighbor-update enable
+end
+The npu-neighbor-update option is disabled by default.
+Manually adding and removing ARP cache entries
+To add static ARP entries:
+config system arp-table
+edit 1
+set interface "internal"
+set ip <example-ip>
+set mac bc:14:01:e9:77:02
+next
+end
+To delete a single ARP entry from the ARP table:
+diagnose ip arp delete <interface name> <IP address>
+To clear all of the entries in the ARP table:
+execute clear system arp table
+IP address
+You may want to verify the IP addresses assigned to the FortiGate interfaces are what you expect them to be.
+To verify IP addresses:
+diagnose ip address list
+The output lists the:
+l IP address and mask (if available)
+l index of the interface (a type of ID number)
+l devname (the interface name)
+While physical interface names are set, virtual interface names can vary. A good way to use this command is to
+list all of the virtual interface names. For vsys_ha and vsys_fgfm, the IP addresses are the local host, which are
+virtual interfaces that are used internally.
+FortiOS 7.4.13 Administration Guide 4167
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4168 =====
+
+Troubleshooting
+Sample output:
+# diagnose ip address list
+IP=<example-ip>-><example-ip>/255.255.255.0 index=3 devname=internal
+IP=<example-ip>-><example-ip>/255.255.255.0 index=5 devname=wan1
+IP=127.0.0.1->127.0.0.1/255.0.0.0 index=8 devname=root
+IP=127.0.0.1->127.0.0.1/255.0.0.0 index=11 devname=vsys_ha
+IP=127.0.0.1->127.0.0.1/255.0.0.0 index=13 devname=vsys_fgfm
+FortiGuard troubleshooting
+The FortiGuard service provides updates to AntiVirus (AV), Antispam (AS), Intrusion Protection Services (IPS),
+Webfiltering (WF), and more. The FortiGuard Distribution System (FDS) consists of a number of servers across
+the world that provide updates to your FortiGate unit. Problems can occur with the connection to FDS and its
+configuration on your local FortiGate unit.
+Some of the more common troubleshooting methods are listed here, including:
+l Verifying connectivity to FortiGuard on page 4168
+l Troubleshooting process for FortiGuard updates on page 4169
+l FortiGuard server settings on page 4170
+l FortiGuard web filter error logs on page 4172
+Verifying connectivity to FortiGuard
+You can verify FortiGuard connectivity in the GUI and CLI.
+To verify FortiGuard connectivity in the GUI:
+1. Got to Dashboard > Status.
+2. Check the Licenses widget. When FortiGate is connected to FortiGuard, licensed services are in green
+icons.
+To verify FortiGuard connectivity in the CLI:
+execute ping service.fortiguard.net
+execute ping update.fortiguard.net
+Sample output:
+FG100D# execute ping service.fortiguard.net
+PING guard.fortinet.net (208.91.112.196): 56 data bytes
+64 bytes from 208.91.112.196: icmp_seq=0 ttl=51 time=61.0 ms
+64 bytes from 208.91.112.196: icmp_seq=1 ttl=51 time=60.0 ms
+64 bytes from 208.91.112.196: icmp_seq=2 ttl=51 time=59.6 ms
+64 bytes from 208.91.112.196: icmp_seq=3 ttl=51 time=58.9 ms
+FortiOS 7.4.13 Administration Guide 4168
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4169 =====
+
+Troubleshooting
+64 bytes from 208.91.112.196: icmp_seq=4 ttl=51 time=59.2 ms
+--- guard.fortinet.net ping statistics ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 58.9/59.7/61.0 ms
+FG100D# execute ping update.fortiguard.net
+PING fds1.fortinet.com (208.91.112.68): 56 data bytes
+64 bytes from 208.91.112.68: icmp_seq=0 ttl=53 time=62.0 ms
+64 bytes from 208.91.112.68: icmp_seq=1 ttl=53 time=61.8 ms
+64 bytes from 208.91.112.68: icmp_seq=2 ttl=53 time=61.3 ms
+64 bytes from 208.91.112.68: icmp_seq=3 ttl=53 time=61.9 ms
+64 bytes from 208.91.112.68: icmp_seq=4 ttl=53 time=61.8 ms
+Troubleshooting process for FortiGuard updates
+The following process shows the logical steps you should take when troubleshooting problems with FortiGuard
+updates:
+1. Does the device have a valid license that includes these services?
+Each device requires a valid FortiGuard license to access updates for some or all of these services. You can
+verify the status of the support contract for your devices at the Fortinet Support website.
+2. If the device is part of a high availability (HA) cluster, do all members of the cluster have the same
+level of support?
+You can verify the status of the support contract for all of the devices in your HA cluster at the Fortinet
+Support website.
+3. Are services enabled on the device?
+To see the FortiGuard information and status for a device in the GUI, go to System > FortiGuard.
+Use this page to verify the status of each component, and enable each service.
+4. Can the device communicate with FortiGuard servers?
+Go to System > FortiGuard in the GUI, and try to update AntiVirus and IPS, or test the availability of Web
+Filtering and AS default and alternate ports.
+5. Is there proper routing to reach the FortiGuard servers?
+Ensure there is a static or dynamic route that allows your FortiGate to reach the FortiGuard servers. Usually
+a generic default route to the internet is enough, but you may need to verify this if your network is complex.
+6. Are there issues with DNS?
+An easy way to test this is to attempt a traceroute from behind the FortiGate to an external network using
+the Fully Qualified Domain Name (FQDN) for a location. If the traceroute FQDN name doesn't resolve, you
+have general DNS problems.
+7. Is there anything upstream that might be blocking FortiGuard traffic, either on the network or ISP
+side?
+Many firewalls block all ports, by default, and ISPs often block ports that are low. There may be a firewall
+between the FortiGate and the FortiGuard servers that's blocking the traffic. By default, FortiGuard uses
+port 53. If that port is blocked you need to either open a hole for it or change the port it is using.
+8. Is there an issue with source ports?
+It is possible that ports that FortiGate uses to contact FortiGuard are being changed before they reach
+FortiGuard or on the return trip before they reach FortiGate. A possible solution for this is to use a fixed-port
+FortiOS 7.4.13 Administration Guide 4169
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4170 =====
+
+Troubleshooting
+at NAT'd firewalls to ensure the port remains the same. You can use packet sniffing to find more information
+about what's happening with ports.
+9. Are there security policies that include antivirus?
+If none of the security policies include antivirus, the antivirus database will not be updated. If antivirus is
+included, only the database type that's used will be updated.
+FortiGuard server settings
+Your local FortiGate connects to remote FortiGuard servers to get updates to FortiGuard information, such as
+new viruses that may have been found or other new threats.
+The default setting to reach FortiGuard is anycast. However, FortiGate can be configured to use unicast server.
+See FortiGuard on page 3394 for more information.
+This section provides methods to display FortiGuard server information on your FortiGate, and how to use that
+information and update it to fix potential problems.
+Displaying the server list
+To get a list of FDS servers FortiGate uses to send web filtering requests:
+get webfilter status
+or
+diagnose debug rating
+Rating requests are only sent to the server at the top of the list in normal operation. Each server is probed for
+Round Trip Time (RTT) every two minutes. Rating may not be enabled on your FortiGate.
+Optionally, you can add a refresh rate to the end of the command to determine how often the server list is
+refreshed.
+Sample output:
+Locale : English
+Service : Web-filter
+Status : Enable
+License : Contract
+Service : Antispam
+Status : Disable
+Service : Virus Outbreak Prevention
+Status : Disable
+Num. of servers : 2
+Protocol : https
+Port : 443
+Anycast : Disable
+Default servers : Included
+FortiOS 7.4.13 Administration Guide 4170
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4171 =====
+
+Troubleshooting
+-=- Server List (Wed Nov 16 14:42:08 2022) -=-
+IP Weight RTT Flags TZ FortiGuard-requests Curr
+Lost Total Lost Updated Time
+140.174.22.68 30 866 -5 13
+0 0 Wed Nov 16 14:41:35 2022
+12.34.97.18 30 878 DI -5 12
+0 0 Wed Nov 16 14:41:35 2022
+Output details
+The server list includes the IP addresses of alternate servers if the first entry cannot be reached. In this
+example, the IP addresses are not public addresses.
+The following flags in get webfilter status indicate the server status:
+Flag Description
+D The server was found through the DNS lookup of the hostname.
+If the hostname returns more than one IP address, all of them are flagged with D and are
+used first for INIT requests before falling back to the other servers.
+I The server to which the last INIT request was sent
+F The server hasn't responded to requests and is considered to have failed
+T The server is currently being timed
+S Rating requests can be sent to the server.
+The flag is set for a server only in two cases:
+l The server exists in the servers list received from the FortiManager or any other INIT
+server.
+l The server list received from the FortiManager is empty so the FortiManager is the only
+server that the FortiGate knows and it should be used as the rating server.
+Please note that the example output displays Anycast as Disable because the CLI commands above work with
+the FortiGuard unicast server case and not with the FortiGuard anycast servers case.
+Also, in the example output above, the server 12.34.97.18 was found through a DNS lookup (D flag) and was sent
+the last INIT request (I flag).
+Sorting the server list
+The server list is sorted first by weight. The server with the smallest RTT appears at the top of the list,
+regardless of weight. When a packet is lost (there has been no response in 2 seconds), it is re-sent to the next
+server in the list. Therefore, the top position in the list is selected based on RTT, while the other positions are
+based on weight.
+Calculating weight
+The weight for each server increases with failed packets and decreases with successful packets. To lower the
+possibility of using a remote server, the weight isn't allowed to dip below a base weight. The base weight is
+FortiOS 7.4.13 Administration Guide 4171
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4172 =====
+
+Troubleshooting
+calculated as the difference in hours between the FortiGate and the server multiplied by 10. The farther away
+the server is, the higher its base weight is and the lower it appears in the list.
+FortiGuard web filter error logs
+When troubleshooting issues related to web filter rating errors, it is helpful to review the following logs. These
+logs can be found in the FortiOS GUI under Log & Report > Security Events > Web Filter.
+Shortened log Message Error Reason
+logid="0318012800"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="error"… msg="A rating
+error occurs" error="rating
+timeout"
+A rating error
+occurs
+rating timeout Occurs if urlfilter sends a
+request to FortiGuard but does
+not receive a response before
+the packet retransmission
+interval.
+logid="0318012801"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="warning" … msg="A
+rating error occurs" error="bad
+network connection"
+A rating error
+occurs
+bad network
+connection
+Occurs if urlfilter sends a
+request to FortiGuard but does
+not receive a response before
+the packet re-transmission
+interval. The number of lost
+packets for a given FortiGuard
+server exceeds a threshold
+logid="0318012800"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="error" … msg="A rating
+error occurs" error="no correct
+FortiGuard information"
+A rating error
+occurs
+no correct
+FortiGuard
+information
+Occurs when urlfilter tried to
+send a request but was not
+able to reach any of the
+FortiGuard servers in its server
+list. This may be because the
+list is empty, or urlfilter has
+already tried all servers but did
+not get any response.
+logid="0318012800"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="error" … msg="A rating
+error occurs" error="unknown"
+A rating error
+occurs
+unknown Occurs when the wad daemon
+does not specify a reason in
+the log or there is an internal
+urlfilter daemon issue.
+logid="0318012800"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="error" … msg="A rating
+error occurs" error="invalid
+license"
+A rating error
+occurs
+invalid license Occurs when urlfilter daemon
+receives "invalid license" error
+response from Fortiguard
+server side when it is doing
+rating request.
+FortiOS 7.4.13 Administration Guide 4172
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4173 =====
+
+Troubleshooting
+Shortened log Message Error Reason
+logid="0318012800"
+type="utm"
+subtype="webfilter"
+eventtype="ftgd_err"
+level="error" … msg="A rating
+error occurs" error="no rating
+service is enabled"
+A rating error
+occurs
+no rating service is
+enabled
+Occurs when urlfilter service is
+not found or enabled.
+Further actions may also be helpful in monitoring and troubleshooting the underlying web filtering issue:
+l Set up Event Handlers in FortiAnalyzer to send alerts upon the appearance of the above logs. See the
+FortiAnalyzer Event Handler for more information.
+l Check the FortiGuard Anycast Query status page for any current outages. An outage in the Web Filter
+Query will display under the line FGT Anycast Web Filter Query Outage.
+View open and in use ports
+Traffic destined for the FortiGate itself, and not being passed through or dropped, is called local-in traffic. It can
+be from a variety of services, such as HTTPS for administrative access, or BGP for inter-router communication.
+Local-in traffic is controlled by local-in policies. To enable viewing local-in policies in the GUI, go to System >
+Feature Visibility and enable Local In Policy.
+The Policy & Objects > Local In Policy page shows a read-only list of the local policies, populated with default
+values, and values that are automatically enabled when the related service is enabled, for example, enabling
+BGP opens TCP port 179. For more information, see Local-in policy on page 1504.
+To view ports that are being listened on, and active connections and the services or processes using
+them:
+# diagnose sys tcpsock | grep 0.0.0.0
+0.0.0.0:10400->0.0.0.0:0->state=listen err=0 socktype=4 rma=0 wma=0 fma=0 tma=0 inode=10621
+process=142/authd
+...
+0.0.0.0:53->0.0.0.0:0->state=listen err=0 socktype=1 rma=0 wma=0 fma=0 tma=0 inode=8067
+process=177/dnsproxy
+0.0.0.0:22->0.0.0.0:0->state=listen err=0 socktype=1 rma=0 wma=0 fma=0 tma=0 inode=13390
+process=225/sshd
+0.0.0.0:541->0.0.0.0:0->state=listen err=0 socktype=1 rma=0 wma=0 fma=0 tma=0 inode=13155
+process=215/fgfmd
+...
+0.0.0.0:9980->0.0.0.0:0->state=listen err=0 socktype=1 rma=0 wma=0 fma=0 tma=0 inode=5063
+process=129/httpsd
+0.0.0.0:179->0.0.0.0:0->state=listen err=0 socktype=1 rma=0 wma=0 fma=0 tma=0 inode=10583
+process=148/bgpd
+...
+For more information on incoming and outgoing ports, see the FortiOS Ports guide.
+FortiOS 7.4.13 Administration Guide 4173
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4174 =====
+
+Troubleshooting
+IPS and AV engine version
+The IPS engine is an important module that processes traffic in policies configured with flow-based inspection,
+next generation firewall policies, as well as any policies that have IPS and application control defined. Just like
+its counterpart, the WAD daemon in proxy-based inspection, the IPS engine can invoke other daemons to
+perform additional processing such as certificate inspection, authentication, and other functions.
+For each FortiOS release, an IPS engine is built into the firmware. You can find information about the IPS engine
+in its corresponding Release Notes.
+When a FortiGate is configured for automatic FortiGuard updates and has policies configured to use the IPS
+engine, it downloads new releases of the IPS engine that are available through the FortiGuard Distribution
+Network. The IPS Engine package released to FortiGuard is unavailable for manual download.
+The FortiGate supports manual upgrade/downgrade of the IPS engine in special cases, such as for
+troubleshooting or resolving a temporary issue that Technical Support deems necessary. In these cases,
+Technical Support distributes the IPS engine package.
+Likewise, the AV engine is also built into the FortiOS firmware and available as an automatic update through
+FortiGuard. You can find information about the AV engine in its corresponding Release Notes.
+Finally, for compatibility information between IPS and AV engines with FortiOS, see IPS Engine and AV Engine
+Support for FortiOS and FortiAPS
+CLI troubleshooting cheat sheet
+See CLI troubleshooting cheat sheet.
+CLI error codes
+CLI error codes are shown in the command line if the command execution fails. The message includes a
+summary, followed by Command fail. Return code -X, where -X is the error code. For example:
+# set test
+Command parse error before ‘test’
+Command fail. Return code -61
+The following table lists common error codes and their descriptions.
+Return Code Description
+1 Generic CLI syntax error
+-1 Invalid length of value.
+-4 Maximum number of entries has been reached.
+FortiOS 7.4.13 Administration Guide 4174
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4175 =====
+
+Troubleshooting
+Return Code Description
+-5 A duplicate entry already exists.
+-8 Invalid IP Address.
+-37 Permission denied.
+-56 Empty values are not allowed.
+-61 Input not as expected.
+-160 CFG_ER_GENERIC (common generic configuration error)
+-553 Name conflicts with an interface, VDOM, switch-interface, zone, or
+interface name used for hardware switch interfaces.
+-651 Input value is invalid.
+Additional resources
+To learn more about FortiGate and FortiOS, and for information about technical issues, refer to the following
+resources.
+Fortinet Document Library
+Installation Guides, Administration Guides, Quick Start Guides, and other technical documents are available
+online at the Fortinet Document Library.
+Release notes
+Issues that arise after the technical documentation has been published are often listed in the release notes. The
+release notes are available in the Fortinet Document Library.
+Fortinet Video Library
+The Fortinet Video Library hosts a collection of videos that provide valuable information about Fortinet
+products.
+Fortinet Community
+The Fortinet Community provides a place to collaborate, share insights and experiences, and get answers to
+questions. It incorporates the Fortinet Knowledge Base and technical discussion forums. You can access the
+FortiOS 7.4.13 Administration Guide 4175
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4176 =====
+
+Troubleshooting
+Fortinet Community at https://community.fortinet.com.
+Knowledge Base
+The Fortinet Knowledge Base provides access to a variety of articles, white papers, and other documentation
+that provides technical insight into a range of Fortinet products. You can access the Knowledge Base at
+https://community.fortinet.com/t5/Knowledge-Base/ct-p/knowledgebase.
+Fortinet technical discussion forums
+The online technical forum allows administrators to contribute to discussions about issues related to their
+Fortinet products. Searching the forum can help an administrator identify if an issue has been experienced by
+another user. You can access the support forum at https://community.fortinet.com/t5/Fortinet-Forum/bd-
+p/fortinet-discussion.
+Fortinet Training Institute
+The Fortinet Training Institute hosts a collection of tutorials and training materials that you can use to increase
+your knowledge of Fortinet products. You can access these training resources at
+https://www.fortinet.com/training.html.
+Fortinet Support
+You defined your problem, researched a solution, put together a plan to find the solution, and executed that
+plan. At this point, if the problem has not been solved, contact Fortinet Support for assistance.
+FortiOS 7.4.13 Administration Guide 4176
+Fortinet Inc.
+
+===== FortiOS 7.4.13 PDF page 4177 =====
+
+www.fortinet.com
+Copyright© 2026 Fortinet, Inc. All rights reserved. Fortinet®, FortiGate®, FortiCare® and FortiGuard®, and certain other marks are registered trademarks of Fortinet, Inc., and other Fortinet
+names herein may also be registered and/or common law trademarks of Fortinet. All other product or company names may be trademarks of their respective owners. Performance and other
+metrics contained herein were attained in internal lab tests under ideal conditions, and actual performance and other results may vary. Network variables, different network environments and
+other conditions may affect performance results. Nothing herein represents any binding commitment by Fortinet, and Fortinet disclaims all warranties, whether express or implied, except to
+the extent Fortinet enters a binding written contract, signed by Fortinet’s Chief Legal Officer, with a purchaser that expressly warrants that the identified product will perform according to
+certain expressly-identified performance metrics and, in such event, only the specific performance metrics expressly identified in such binding written contract shall be binding on Fortinet.
+For absolute clarity, any such warranty will be limited to performance in the same ideal conditions as in Fortinet’s internal lab tests. Fortinet disclaims in full any covenants, representations,
+and guarantees pursuant hereto, whether express or implied. Fortinet reserves the right to change, modify, transfer, or otherwise revise this publication without notice, and the most current
+version of the publication shall be applicable.
